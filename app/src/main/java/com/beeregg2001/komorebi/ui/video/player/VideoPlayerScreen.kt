@@ -501,7 +501,7 @@ fun VideoPlayerScreen(
                         (videoWidth.toFloat() * pixelWidthHeightRatio) / videoHeight.toFloat()
                     view.setAspectRatio(ratio)
                     val targetMode =
-                        if (ratio >= 1.7f) AspectRatioFrameLayout.RESIZE_MODE_FILL else AspectRatioFrameLayout.RESIZE_MODE_FIT
+                        if (ratio >= 1.7f) AspectRatioFrameLayout.RESIZE_MODE_FIT else AspectRatioFrameLayout.RESIZE_MODE_FIT
                     if (view.resizeMode != targetMode) view.resizeMode = targetMode
                 }
             },
