@@ -47,6 +47,7 @@ import com.beeregg2001.komorebi.viewmodel.SettingsViewModel
 import java.time.Duration
 import java.time.OffsetDateTime
 import kotlinx.coroutines.delay
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -514,6 +515,7 @@ fun EpgHeaderSection(
                             false
                         }
                         .focusable()
+                        .tvPhoneClickable { onTypeChanged(apiValue) }
                         .background(
                             if (isTabFocused) colors.textPrimary else Color.Transparent,
                             RectangleShape
@@ -571,6 +573,7 @@ fun EpgHeaderSection(
                     false
                 }
                 .focusable()
+                .tvPhoneClickable { onSearchClick() }
                 .background(if (isSearchBtnFocused) colors.textPrimary else Color.Transparent),
             contentAlignment = Alignment.Center
         ) {
@@ -615,6 +618,7 @@ fun EpgHeaderSection(
                     false
                 }
                 .focusable()
+                .tvPhoneClickable { onEpgJumpMenuStateChanged(true) }
                 .background(if (isJumpBtnFocused) colors.textPrimary else Color.Transparent),
             contentAlignment = Alignment.Center
         ) {
