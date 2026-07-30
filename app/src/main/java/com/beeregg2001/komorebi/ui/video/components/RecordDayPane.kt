@@ -22,6 +22,7 @@ import androidx.tv.material3.*
 import com.beeregg2001.komorebi.common.safeRequestFocus
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
 import kotlinx.coroutines.delay
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @OptIn(ExperimentalTvMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -79,6 +80,7 @@ fun RecordDayPane(
                                 if (index == days.lastIndex) down = FocusRequester.Cancel
                                 right = FocusRequester.Cancel
                             }
+                            .tvPhoneClickable { onDaySelect(day) }
                             .onKeyEvent { event ->
                                 if (event.type == KeyEventType.KeyDown) {
                                     when (event.key) {

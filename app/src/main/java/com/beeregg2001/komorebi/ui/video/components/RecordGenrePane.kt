@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.tv.material3.*
 import com.beeregg2001.komorebi.data.util.EpgUtils
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @OptIn(ExperimentalTvMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -122,6 +123,7 @@ private fun GenreItem(
             .fillMaxWidth()
             .height(48.dp)
             .onFocusChanged { isFocused = it.isFocused }
+            .tvPhoneClickable { onClick() }
             .onKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionLeft) {
                     onBack()

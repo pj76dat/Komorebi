@@ -22,6 +22,7 @@ import androidx.tv.material3.*
 import com.beeregg2001.komorebi.common.safeRequestFocus
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
 import kotlinx.coroutines.delay
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @OptIn(ExperimentalTvMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -96,6 +97,9 @@ fun RecordChannelPane(
                                         else -> false
                                     }
                                 } else false
+                            }
+                            .tvPhoneClickable {
+                                if (selectedType == null) selectedType = id else onChannelSelect(id)
                             },
                         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
                         colors = ClickableSurfaceDefaults.colors(

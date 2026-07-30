@@ -39,6 +39,7 @@ import com.beeregg2001.komorebi.ui.video.FocusTicket
 import com.beeregg2001.komorebi.ui.video.FocusTicketManager
 import com.beeregg2001.komorebi.common.safeRequestFocusWithRetry
 import kotlinx.coroutines.delay
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @SuppressLint("RememberInComposition")
 @OptIn(ExperimentalTvMaterial3Api::class)
@@ -173,7 +174,8 @@ fun SmbListContent(
                             }
                         }
                         false
-                    },
+                    }
+                    .tvPhoneClickable { onItemClick(item) },
                 shape = ClickableSurfaceDefaults.shape(RoundedCornerShape(4.dp)),
                 scale = ClickableSurfaceDefaults.scale(focusedScale = 1.02f),
                 colors = ClickableSurfaceDefaults.colors(
@@ -344,6 +346,7 @@ fun SmbGridContent(
                             onFocusedItemChanged(item)
                         }
                     }
+                    .tvPhoneClickable { onItemClick(item) }
                     .focusProperties {
                         if (index % 4 == 0) left = FocusRequester.Cancel
                     }
@@ -357,7 +360,8 @@ fun SmbGridContent(
                             }
                         }
                         false
-                    },
+                    }
+                    .tvPhoneClickable { onItemClick(item) },
                 shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
                 scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
                 colors = ClickableSurfaceDefaults.colors(

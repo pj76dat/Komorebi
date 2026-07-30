@@ -109,7 +109,7 @@ fun VideoRecentRecordCard(
             .height(160.dp)
             .focusRequester(specificRequester)
             .onFocusChanged { isFocused = it.isFocused || it.hasFocus; if (isFocused) onFocus() }
-            .tvPhoneClickable { onClick() },
+            .tvPhoneClickable { if (!isCurrentlyRecording) onClick() },
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
         colors = ClickableSurfaceDefaults.colors(
             containerColor = colors.surface.copy(alpha = 0.5f),
@@ -487,7 +487,8 @@ fun RecordListBannerButton(
         onClick = onClick,
         modifier = modifier
             .height(88.dp)
-            .onFocusChanged { isFocused = it.isFocused || it.hasFocus; if (isFocused) onFocus() },
+            .onFocusChanged { isFocused = it.isFocused || it.hasFocus; if (isFocused) onFocus() }
+            .tvPhoneClickable { onClick() },
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
         shape = ClickableSurfaceDefaults.shape(RoundedCornerShape(12.dp)),
         colors = ClickableSurfaceDefaults.colors(

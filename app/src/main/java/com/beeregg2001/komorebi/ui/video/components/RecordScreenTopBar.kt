@@ -33,6 +33,7 @@ import androidx.compose.ui.zIndex
 import androidx.tv.material3.*
 import com.beeregg2001.komorebi.common.safeRequestFocus
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 private const val TAG = "RecordScreenTopBar"
 
@@ -219,7 +220,8 @@ fun RecordScreenTopBar(
                             up = FocusRequester.Cancel
                             down = firstItemFocusRequester
                             left = FocusRequester.Cancel
-                        },
+                        }
+                        .tvPhoneClickable { onBackPress() },
                     colors = iconButtonColors
                 ) {
                     Icon(Icons.Default.ArrowBack, "戻る")
@@ -256,7 +258,8 @@ fun RecordScreenTopBar(
                             .focusProperties {
                                 up = FocusRequester.Cancel
                                 down = firstItemFocusRequester
-                            },
+                            }
+                            .tvPhoneClickable { onSortOpen() },
                         colors = iconButtonColors
                     ) {
                         Icon(Icons.Default.Sort, "並び替え")
@@ -272,7 +275,8 @@ fun RecordScreenTopBar(
                         .focusProperties {
                             up = FocusRequester.Cancel
                             down = firstItemFocusRequester
-                        },
+                        }
+                        .tvPhoneClickable { onViewToggle() },
                     shape = ClickableSurfaceDefaults.shape(CircleShape),
                     colors = ClickableSurfaceDefaults.colors(
                         containerColor = colors.surface.copy(alpha = 0.5f),
@@ -324,7 +328,8 @@ fun RecordScreenTopBar(
                         .focusProperties {
                             up = FocusRequester.Cancel
                             down = firstItemFocusRequester
-                        },
+                        }
+                        .tvPhoneClickable { onSearchOpen() },
                     colors = iconButtonColors
                 ) {
                     Icon(Icons.Default.Search, "検索")
