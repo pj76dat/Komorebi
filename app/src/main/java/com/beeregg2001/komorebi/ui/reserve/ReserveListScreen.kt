@@ -38,6 +38,7 @@ import com.beeregg2001.komorebi.common.safeRequestFocusWithRetry
 import com.beeregg2001.komorebi.viewmodel.ChannelViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 private const val TAG = "ReserveListScreen"
 
@@ -425,6 +426,10 @@ fun ReserveListScreen(
                                     return@onKeyEvent true
                                 }
                                 false
+                            }
+                            .tvPhoneClickable {
+                                viewModel.updateTabIndex(index)
+                                viewModel.clearFocusMemory()
                             },
                         colors = TabDefaults.underlinedIndicatorTabColors(
                             contentColor = colors.textSecondary,
@@ -636,7 +641,8 @@ fun ReserveListScreen(
                                                     viewModel.lastClickedConditionId = condition.id
                                                     viewModel.lastClickedReserveId = null
                                                 }
-                                            },
+                                            }
+                                            .tvPhoneClickable { onConditionClick(condition) },
                                         getLogoUrl = { displayId ->
                                             channelViewModel.getChannelLogoUrl(
                                                 displayId

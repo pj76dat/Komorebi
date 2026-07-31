@@ -34,6 +34,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
@@ -134,7 +135,8 @@ fun ReserveCard(
         modifier = modifier
             .fillMaxWidth()
             .height(110.dp)
-            .onFocusChanged { isFocused = it.isFocused },
+            .onFocusChanged { isFocused = it.isFocused }
+            .tvPhoneClickable { onClick() },
         shape = ClickableSurfaceDefaults.shape(RoundedCornerShape(8.dp)),
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.02f),
         colors = ClickableSurfaceDefaults.colors(
