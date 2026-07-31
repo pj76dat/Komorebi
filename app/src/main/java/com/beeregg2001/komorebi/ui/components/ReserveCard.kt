@@ -130,173 +130,174 @@ fun ReserveCard(
         }
     }
 
-    Surface(
-        onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(110.dp)
-            .onFocusChanged { isFocused = it.isFocused }
-            .tvPhoneClickable { onClick() },
-        shape = ClickableSurfaceDefaults.shape(RoundedCornerShape(8.dp)),
-        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.02f),
-        colors = ClickableSurfaceDefaults.colors(
-            containerColor = colors.surface,
-            focusedContainerColor = colors.textPrimary,
-            contentColor = colors.textPrimary,
-            focusedContentColor = if (colors.isDark) Color.Black else Color.White
-        ),
-        border = ClickableSurfaceDefaults.border(
-            focusedBorder = Border(
-                border = BorderStroke(2.dp, colors.accent),
-                shape = RoundedCornerShape(8.dp)
-            )
-        )
-    ) {
-        Row(
+    Box(modifier = modifier.tvPhoneClickable { onClick() }) {
+        Surface(
+            onClick = onClick,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.width(60.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Box(
-                        modifier = Modifier
-                            .size(24.dp)
-                            .background(badgeBgColor, CircleShape)
-                    )
-                    Text(
-                        text = settings.priority.toString(),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = badgeTextColor,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Text(
-                    "優先度",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontSize = 9.sp,
-                    color = subTextColor
+                .fillMaxWidth()
+                .height(110.dp)
+                .onFocusChanged { isFocused = it.isFocused },
+            shape = ClickableSurfaceDefaults.shape(RoundedCornerShape(8.dp)),
+            scale = ClickableSurfaceDefaults.scale(focusedScale = 1.02f),
+            colors = ClickableSurfaceDefaults.colors(
+                containerColor = colors.surface,
+                focusedContainerColor = colors.textPrimary,
+                contentColor = colors.textPrimary,
+                focusedContentColor = if (colors.isDark) Color.Black else Color.White
+            ),
+            border = ClickableSurfaceDefaults.border(
+                focusedBorder = Border(
+                    border = BorderStroke(2.dp, colors.accent),
+                    shape = RoundedCornerShape(8.dp)
                 )
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = program.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = contentColor,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .weight(1f, fill = false)
-                            .then(
-                                if (isFocused) Modifier.basicMarquee(
-                                    iterations = Int.MAX_VALUE,
-                                    velocity = 40.dp
-                                ) else Modifier
-                            )
-                    )
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (logoUrl.isNotEmpty()) {
-                        AsyncImage(
-                            model = logoUrl,
-                            contentDescription = null,
+            )
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.width(60.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Box(
                             modifier = Modifier
-                                .width(48.dp)
-                                .aspectRatio(16f / 9f)
-                                .clipToBounds()
-                                .background(
-                                    if (isFocused) Color.Transparent else colors.textPrimary.copy(
-                                        0.1f
-                                    ),
-                                    RoundedCornerShape(2.dp)
-                                ),
-                            contentScale = ContentScale.Crop
+                                .size(24.dp)
+                                .background(badgeBgColor, CircleShape)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = settings.priority.toString(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = badgeTextColor,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                     Text(
-                        text = "${item.channel.channelNumber} ${item.channel.name}",
+                        "優先度",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontSize = 9.sp,
+                        color = subTextColor
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = program.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = contentColor,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .weight(1f, fill = false)
+                                .then(
+                                    if (isFocused) Modifier.basicMarquee(
+                                        iterations = Int.MAX_VALUE,
+                                        velocity = 40.dp
+                                    ) else Modifier
+                                )
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (logoUrl.isNotEmpty()) {
+                            AsyncImage(
+                                model = logoUrl,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .width(48.dp)
+                                    .aspectRatio(16f / 9f)
+                                    .clipToBounds()
+                                    .background(
+                                        if (isFocused) Color.Transparent else colors.textPrimary.copy(
+                                            0.1f
+                                        ),
+                                        RoundedCornerShape(2.dp)
+                                    ),
+                                contentScale = ContentScale.Crop
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+                        Text(
+                            text = "${item.channel.channelNumber} ${item.channel.name}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = subTextColor,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = program.description ?: "",
                         style = MaterialTheme.typography.bodySmall,
                         color = subTextColor,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = program.description ?: "",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = subTextColor,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxHeight()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .border(
-                            1.dp,
-                            if (isFocused && statusColor == normalGreen) (if (colors.isDark) Color.Black else Color.White) else statusColor,
-                            RoundedCornerShape(16.dp)
-                        )
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxHeight()
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (isRecording) {
-                            Box(
-                                modifier = Modifier
-                                    .size(10.dp)
-                                    .background(statusColor, CircleShape)
+                    Box(
+                        modifier = Modifier
+                            .border(
+                                1.dp,
+                                if (isFocused && statusColor == normalGreen) (if (colors.isDark) Color.Black else Color.White) else statusColor,
+                                RoundedCornerShape(16.dp)
                             )
-                        } else if (statusIcon != null) {
-                            Icon(
-                                imageVector = statusIcon,
-                                contentDescription = null,
-                                tint = statusColor,
-                                modifier = Modifier.size(12.dp)
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (isRecording) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(10.dp)
+                                        .background(statusColor, CircleShape)
+                                )
+                            } else if (statusIcon != null) {
+                                Icon(
+                                    imageVector = statusIcon,
+                                    contentDescription = null,
+                                    tint = statusColor,
+                                    modifier = Modifier.size(12.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = statusText,
+                                color = statusColor,
+                                style = MaterialTheme.typography.labelSmall
                             )
                         }
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = timeInfo,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = contentColor,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.Storage,
+                            null,
+                            tint = subTextColor,
+                            modifier = Modifier.size(12.dp)
+                        )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = statusText,
-                            color = statusColor,
-                            style = MaterialTheme.typography.labelSmall
+                            text = fileSizeInfo,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = subTextColor
                         )
                     }
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = timeInfo,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = contentColor,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.Storage,
-                        null,
-                        tint = subTextColor,
-                        modifier = Modifier.size(12.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = fileSizeInfo,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = subTextColor
-                    )
                 }
             }
         }

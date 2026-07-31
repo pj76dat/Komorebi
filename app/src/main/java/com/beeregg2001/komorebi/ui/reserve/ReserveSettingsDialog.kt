@@ -38,6 +38,9 @@ import com.beeregg2001.komorebi.viewmodel.PostRecordingBatch
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.delay
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalTvMaterial3Api::class, ExperimentalComposeUiApi::class)
@@ -125,7 +128,9 @@ fun ReserveSettingsDialog(
             )
         ) {
             Column(
-                modifier = Modifier.padding(32.dp),
+                modifier = Modifier
+                    .padding(32.dp)
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
@@ -195,7 +200,9 @@ fun ReserveSettingsDialog(
                         batchList.find { it.path == selectedBatPath }?.name ?: "なし"
                     Button(
                         onClick = { isBatSelectionOpen = true },
-                        modifier = Modifier.focusRequester(batSelectionFocusRequester),
+                        modifier = Modifier
+                            .focusRequester(batSelectionFocusRequester)
+                            .tvPhoneClickable { isBatSelectionOpen = true },
                         colors = ButtonDefaults.colors(
                             containerColor = colors.textPrimary.copy(alpha = 0.1f),
                             contentColor = colors.textPrimary
@@ -228,6 +235,8 @@ fun ReserveSettingsDialog(
                 ) {
                     Button(
                         onClick = onDismiss,
+                        modifier = Modifier
+                            .tvPhoneClickable { onDismiss() },
                         colors = ButtonDefaults.colors(
                             containerColor = Color.Transparent,
                             contentColor = colors.textSecondary,
@@ -249,6 +258,17 @@ fun ReserveSettingsDialog(
                             )
                             onConfirm(newSettings)
                         },
+                        modifier = Modifier
+                            .tvPhoneClickable {
+                                val newSettings = initialSettings.copy(
+                                    isEnabled = isEnabled,
+                                    priority = priority,
+                                    recordingMode = "SpecifiedService",
+                                    postRecordingBatFilePath = selectedBatPath,
+                                    isEventRelayFollowEnabled = isEventRelay
+                                )
+                                onConfirm(newSettings)
+                            },
                         colors = ButtonDefaults.colors(
                             containerColor = colors.textPrimary.copy(alpha = 0.15f),
                             contentColor = colors.textPrimary,

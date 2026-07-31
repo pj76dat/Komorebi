@@ -1,0 +1,633 @@
+diff --git a/app/src/main/java/com/beeregg2001/komorebi/ui/components/ReserveCard.kt b/app/src/main/java/com/beeregg2001/komorebi/ui/components/ReserveCard.kt
+index e32dab2..ea85d61 100644
+--- a/app/src/main/java/com/beeregg2001/komorebi/ui/components/ReserveCard.kt
++++ b/app/src/main/java/com/beeregg2001/komorebi/ui/components/ReserveCard.kt
+@@ -130,174 +130,175 @@ fun ReserveCard(
+         }
+     }
+ 
+-    Surface(
+-        onClick = onClick,
+-        modifier = modifier
+-            .fillMaxWidth()
+-            .height(110.dp)
+-            .onFocusChanged { isFocused = it.isFocused }
+-            .tvPhoneClickable { onClick() },
+-        shape = ClickableSurfaceDefaults.shape(RoundedCornerShape(8.dp)),
+-        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.02f),
+-        colors = ClickableSurfaceDefaults.colors(
+-            containerColor = colors.surface,
+-            focusedContainerColor = colors.textPrimary,
+-            contentColor = colors.textPrimary,
+-            focusedContentColor = if (colors.isDark) Color.Black else Color.White
+-        ),
+-        border = ClickableSurfaceDefaults.border(
+-            focusedBorder = Border(
+-                border = BorderStroke(2.dp, colors.accent),
+-                shape = RoundedCornerShape(8.dp)
+-            )
+-        )
+-    ) {
+-        Row(
++    Box(modifier = modifier.tvPhoneClickable { onClick() }) {
++        Surface(
++            onClick = onClick,
+             modifier = Modifier
+-                .fillMaxSize()
+-                .padding(16.dp),
+-            verticalAlignment = Alignment.CenterVertically
++                .fillMaxWidth()
++                .height(110.dp)
++                .onFocusChanged { isFocused = it.isFocused },
++            shape = ClickableSurfaceDefaults.shape(RoundedCornerShape(8.dp)),
++            scale = ClickableSurfaceDefaults.scale(focusedScale = 1.02f),
++            colors = ClickableSurfaceDefaults.colors(
++                containerColor = colors.surface,
++                focusedContainerColor = colors.textPrimary,
++                contentColor = colors.textPrimary,
++                focusedContentColor = if (colors.isDark) Color.Black else Color.White
++            ),
++            border = ClickableSurfaceDefaults.border(
++                focusedBorder = Border(
++                    border = BorderStroke(2.dp, colors.accent),
++                    shape = RoundedCornerShape(8.dp)
++                )
++            )
+         ) {
+-            Column(
+-                horizontalAlignment = Alignment.CenterHorizontally,
+-                modifier = Modifier.width(60.dp)
++            Row(
++                modifier = Modifier
++                    .fillMaxSize()
++                    .padding(16.dp),
++                verticalAlignment = Alignment.CenterVertically
+             ) {
+-                Box(contentAlignment = Alignment.Center) {
+-                    Box(
+-                        modifier = Modifier
+-                            .size(24.dp)
+-                            .background(badgeBgColor, CircleShape)
+-                    )
++                Column(
++                    horizontalAlignment = Alignment.CenterHorizontally,
++                    modifier = Modifier.width(60.dp)
++                ) {
++                    Box(contentAlignment = Alignment.Center) {
++                        Box(
++                            modifier = Modifier
++                                .size(24.dp)
++                                .background(badgeBgColor, CircleShape)
++                        )
++                        Text(
++                            text = settings.priority.toString(),
++                            style = MaterialTheme.typography.labelSmall,
++                            color = badgeTextColor,
++                            fontWeight = FontWeight.Bold
++                        )
++                    }
+                     Text(
+-                        text = settings.priority.toString(),
++                        "優先度",
+                         style = MaterialTheme.typography.labelSmall,
+-                        color = badgeTextColor,
+-                        fontWeight = FontWeight.Bold
+-                    )
+-                }
+-                Text(
+-                    "優先度",
+-                    style = MaterialTheme.typography.labelSmall,
+-                    fontSize = 9.sp,
+-                    color = subTextColor
+-                )
+-            }
+-            Spacer(modifier = Modifier.width(16.dp))
+-            Column(modifier = Modifier.weight(1f)) {
+-                Row(verticalAlignment = Alignment.CenterVertically) {
+-                    Text(
+-                        text = program.title,
+-                        style = MaterialTheme.typography.titleMedium,
+-                        fontWeight = FontWeight.Bold,
+-                        color = contentColor,
+-                        maxLines = 1,
+-                        overflow = TextOverflow.Ellipsis,
+-                        modifier = Modifier
+-                            .weight(1f, fill = false)
+-                            .then(
+-                                if (isFocused) Modifier.basicMarquee(
+-                                    iterations = Int.MAX_VALUE,
+-                                    velocity = 40.dp
+-                                ) else Modifier
+-                            )
++                        fontSize = 9.sp,
++                        color = subTextColor
+                     )
+                 }
+-                Spacer(modifier = Modifier.height(4.dp))
+-                Row(verticalAlignment = Alignment.CenterVertically) {
+-                    if (logoUrl.isNotEmpty()) {
+-                        AsyncImage(
+-                            model = logoUrl,
+-                            contentDescription = null,
++                Spacer(modifier = Modifier.width(16.dp))
++                Column(modifier = Modifier.weight(1f)) {
++                    Row(verticalAlignment = Alignment.CenterVertically) {
++                        Text(
++                            text = program.title,
++                            style = MaterialTheme.typography.titleMedium,
++                            fontWeight = FontWeight.Bold,
++                            color = contentColor,
++                            maxLines = 1,
++                            overflow = TextOverflow.Ellipsis,
+                             modifier = Modifier
+-                                .width(48.dp)
+-                                .aspectRatio(16f / 9f)
+-                                .clipToBounds()
+-                                .background(
+-                                    if (isFocused) Color.Transparent else colors.textPrimary.copy(
+-                                        0.1f
++                                .weight(1f, fill = false)
++                                .then(
++                                    if (isFocused) Modifier.basicMarquee(
++                                        iterations = Int.MAX_VALUE,
++                                        velocity = 40.dp
++                                    ) else Modifier
++                                )
++                        )
++                    }
++                    Spacer(modifier = Modifier.height(4.dp))
++                    Row(verticalAlignment = Alignment.CenterVertically) {
++                        if (logoUrl.isNotEmpty()) {
++                            AsyncImage(
++                                model = logoUrl,
++                                contentDescription = null,
++                                modifier = Modifier
++                                    .width(48.dp)
++                                    .aspectRatio(16f / 9f)
++                                    .clipToBounds()
++                                    .background(
++                                        if (isFocused) Color.Transparent else colors.textPrimary.copy(
++                                            0.1f
++                                        ),
++                                        RoundedCornerShape(2.dp)
+                                     ),
+-                                    RoundedCornerShape(2.dp)
+-                                ),
+-                            contentScale = ContentScale.Crop
++                                contentScale = ContentScale.Crop
++                            )
++                            Spacer(modifier = Modifier.width(8.dp))
++                        }
++                        Text(
++                            text = "${item.channel.channelNumber} ${item.channel.name}",
++                            style = MaterialTheme.typography.bodySmall,
++                            color = subTextColor,
++                            maxLines = 1,
++                            overflow = TextOverflow.Ellipsis
+                         )
+-                        Spacer(modifier = Modifier.width(8.dp))
+                     }
++                    Spacer(modifier = Modifier.height(4.dp))
+                     Text(
+-                        text = "${item.channel.channelNumber} ${item.channel.name}",
++                        text = program.description ?: "",
+                         style = MaterialTheme.typography.bodySmall,
+                         color = subTextColor,
+                         maxLines = 1,
+                         overflow = TextOverflow.Ellipsis
+                     )
+                 }
+-                Spacer(modifier = Modifier.height(4.dp))
+-                Text(
+-                    text = program.description ?: "",
+-                    style = MaterialTheme.typography.bodySmall,
+-                    color = subTextColor,
+-                    maxLines = 1,
+-                    overflow = TextOverflow.Ellipsis
+-                )
+-            }
+-            Spacer(modifier = Modifier.width(16.dp))
+-            Column(
+-                horizontalAlignment = Alignment.End,
+-                verticalArrangement = Arrangement.SpaceBetween,
+-                modifier = Modifier.fillMaxHeight()
+-            ) {
+-                Box(
+-                    modifier = Modifier
+-                        .border(
+-                            1.dp,
+-                            if (isFocused && statusColor == normalGreen) (if (colors.isDark) Color.Black else Color.White) else statusColor,
+-                            RoundedCornerShape(16.dp)
+-                        )
+-                        .padding(horizontal = 8.dp, vertical = 4.dp)
++                Spacer(modifier = Modifier.width(16.dp))
++                Column(
++                    horizontalAlignment = Alignment.End,
++                    verticalArrangement = Arrangement.SpaceBetween,
++                    modifier = Modifier.fillMaxHeight()
+                 ) {
+-                    Row(verticalAlignment = Alignment.CenterVertically) {
+-                        if (isRecording) {
+-                            Box(
+-                                modifier = Modifier
+-                                    .size(10.dp)
+-                                    .background(statusColor, CircleShape)
++                    Box(
++                        modifier = Modifier
++                            .border(
++                                1.dp,
++                                if (isFocused && statusColor == normalGreen) (if (colors.isDark) Color.Black else Color.White) else statusColor,
++                                RoundedCornerShape(16.dp)
+                             )
+-                        } else if (statusIcon != null) {
+-                            Icon(
+-                                imageVector = statusIcon,
+-                                contentDescription = null,
+-                                tint = statusColor,
+-                                modifier = Modifier.size(12.dp)
++                            .padding(horizontal = 8.dp, vertical = 4.dp)
++                    ) {
++                        Row(verticalAlignment = Alignment.CenterVertically) {
++                            if (isRecording) {
++                                Box(
++                                    modifier = Modifier
++                                        .size(10.dp)
++                                        .background(statusColor, CircleShape)
++                                )
++                            } else if (statusIcon != null) {
++                                Icon(
++                                    imageVector = statusIcon,
++                                    contentDescription = null,
++                                    tint = statusColor,
++                                    modifier = Modifier.size(12.dp)
++                                )
++                            }
++                            Spacer(modifier = Modifier.width(4.dp))
++                            Text(
++                                text = statusText,
++                                color = statusColor,
++                                style = MaterialTheme.typography.labelSmall
+                             )
+                         }
++                    }
++                    Spacer(modifier = Modifier.weight(1f))
++                    Text(
++                        text = timeInfo,
++                        style = MaterialTheme.typography.bodyMedium,
++                        color = contentColor,
++                        fontWeight = FontWeight.SemiBold
++                    )
++                    Row(verticalAlignment = Alignment.CenterVertically) {
++                        Icon(
++                            Icons.Default.Storage,
++                            null,
++                            tint = subTextColor,
++                            modifier = Modifier.size(12.dp)
++                        )
+                         Spacer(modifier = Modifier.width(4.dp))
+                         Text(
+-                            text = statusText,
+-                            color = statusColor,
+-                            style = MaterialTheme.typography.labelSmall
++                            text = fileSizeInfo,
++                            style = MaterialTheme.typography.labelSmall,
++                            color = subTextColor
+                         )
+                     }
+                 }
+-                Spacer(modifier = Modifier.weight(1f))
+-                Text(
+-                    text = timeInfo,
+-                    style = MaterialTheme.typography.bodyMedium,
+-                    color = contentColor,
+-                    fontWeight = FontWeight.SemiBold
+-                )
+-                Row(verticalAlignment = Alignment.CenterVertically) {
+-                    Icon(
+-                        Icons.Default.Storage,
+-                        null,
+-                        tint = subTextColor,
+-                        modifier = Modifier.size(12.dp)
+-                    )
+-                    Spacer(modifier = Modifier.width(4.dp))
+-                    Text(
+-                        text = fileSizeInfo,
+-                        style = MaterialTheme.typography.labelSmall,
+-                        color = subTextColor
+-                    )
+-                }
+             }
+         }
+     }
+diff --git a/app/src/main/java/com/beeregg2001/komorebi/ui/epg/ProgramDetailScreen.kt b/app/src/main/java/com/beeregg2001/komorebi/ui/epg/ProgramDetailScreen.kt
+index 315839b..e850068 100644
+--- a/app/src/main/java/com/beeregg2001/komorebi/ui/epg/ProgramDetailScreen.kt
++++ b/app/src/main/java/com/beeregg2001/komorebi/ui/epg/ProgramDetailScreen.kt
+@@ -41,6 +41,7 @@ import kotlinx.coroutines.yield
+ import java.time.OffsetDateTime
+ import java.time.format.DateTimeFormatter
+ import java.util.Locale
++import com.beeregg2001.komorebi.common.tvPhoneClickable
+ 
+ enum class ProgramDetailMode {
+     EPG, RESERVE
+@@ -177,6 +178,7 @@ fun ProgramDetailScreen(
+                             modifier = Modifier
+                                 .fillMaxWidth()
+                                 .focusRequester(initialFocusRequester)
++                                .tvPhoneClickable { if (isClickEnabled) onEditReserveClick(safeProgram) }
+                         ) {
+                             Text(
+                                 "予約設定変更",
+@@ -191,7 +193,9 @@ fun ProgramDetailScreen(
+                                 containerColor = recordRed,
+                                 contentColor = Color.White
+                             ),
+-                            modifier = Modifier.fillMaxWidth()
++                            modifier = Modifier
++                                .fillMaxWidth()
++                                .tvPhoneClickable { if (isClickEnabled) onDeleteReserveClick(safeProgram) }
+                         ) {
+                             Text(
+                                 "予約を削除",
+@@ -205,7 +209,8 @@ fun ProgramDetailScreen(
+                                 onClick = { if (isClickEnabled) onPlayClick(safeProgram) },
+                                 modifier = Modifier
+                                     .fillMaxWidth()
+-                                    .focusRequester(initialFocusRequester),
++                                    .focusRequester(initialFocusRequester)
++                                    .tvPhoneClickable { if (isClickEnabled) onPlayClick(safeProgram) },
+                                 colors = ButtonDefaults.colors(
+                                     containerColor = colors.textPrimary,
+                                     contentColor = if (colors.isDark) Color.Black else Color.White
+@@ -225,7 +230,9 @@ fun ProgramDetailScreen(
+                                         containerColor = colors.textPrimary.copy(alpha = 0.1f),
+                                         contentColor = colors.textPrimary
+                                     ),
+-                                    modifier = Modifier.fillMaxWidth()
++                                    modifier = Modifier
++                                        .fillMaxWidth()
++                                        .tvPhoneClickable { if (isClickEnabled) onEditReserveClick(safeProgram) }
+                                 ) {
+                                     Text(
+                                         "予約設定変更",
+@@ -239,7 +246,9 @@ fun ProgramDetailScreen(
+                                         containerColor = recordRed,
+                                         contentColor = Color.White
+                                     ),
+-                                    modifier = Modifier.fillMaxWidth()
++                                    modifier = Modifier
++                                        .fillMaxWidth()
++                                        .tvPhoneClickable { if (isClickEnabled) onDeleteReserveClick(safeProgram) }
+                                 ) {
+                                     Text(
+                                         "予約を削除",
+@@ -250,7 +259,9 @@ fun ProgramDetailScreen(
+                             } else {
+                                 Button(
+                                     onClick = { if (isClickEnabled) onRecordClick(safeProgram) },
+-                                    modifier = Modifier.fillMaxWidth(),
++                                    modifier = Modifier
++                                        .fillMaxWidth()
++                                        .tvPhoneClickable { if (isClickEnabled) onRecordClick(safeProgram) },
+                                     colors = ButtonDefaults.colors(
+                                         containerColor = recordRed,
+                                         contentColor = Color.White
+@@ -271,6 +282,7 @@ fun ProgramDetailScreen(
+                                     modifier = Modifier
+                                         .fillMaxWidth()
+                                         .focusRequester(epgReserveButtonRequester)
++                                        .tvPhoneClickable { if (isClickEnabled) showEpgReserveDialog = true }
+                                 ) {
+                                     Text(
+                                         "EPG予約する",
+@@ -284,7 +296,9 @@ fun ProgramDetailScreen(
+                                         containerColor = recordDarkRed,
+                                         contentColor = Color.White
+                                     ),
+-                                    modifier = Modifier.fillMaxWidth()
++                                    modifier = Modifier
++                                        .fillMaxWidth()
++                                        .tvPhoneClickable { if (isClickEnabled) onRecordDetailClick(safeProgram) }
+                                 ) { Text("録画する（詳細設定）", fontFamily = NotoSansJP) }
+                             }
+ 
+@@ -299,6 +313,7 @@ fun ProgramDetailScreen(
+                                     modifier = Modifier
+                                         .fillMaxWidth()
+                                         .focusRequester(initialFocusRequester)
++                                        .tvPhoneClickable { if (isClickEnabled) onEditReserveClick(safeProgram) }
+                                 ) {
+                                     Text(
+                                         "予約設定変更",
+@@ -312,7 +327,9 @@ fun ProgramDetailScreen(
+                                         containerColor = recordRed,
+                                         contentColor = Color.White
+                                     ),
+-                                    modifier = Modifier.fillMaxWidth()
++                                    modifier = Modifier
++                                        .fillMaxWidth()
++                                        .tvPhoneClickable { if (isClickEnabled) onDeleteReserveClick(safeProgram) }
+                                 ) {
+                                     Text(
+                                         "予約を削除",
+@@ -325,7 +342,8 @@ fun ProgramDetailScreen(
+                                     onClick = { if (isClickEnabled) onRecordClick(safeProgram) },
+                                     modifier = Modifier
+                                         .fillMaxWidth()
+-                                        .focusRequester(initialFocusRequester),
++                                        .focusRequester(initialFocusRequester)
++                                        .tvPhoneClickable { if (isClickEnabled) onRecordClick(safeProgram) },
+                                     colors = ButtonDefaults.colors(
+                                         containerColor = recordRed,
+                                         contentColor = Color.White
+@@ -346,6 +364,7 @@ fun ProgramDetailScreen(
+                                     modifier = Modifier
+                                         .fillMaxWidth()
+                                         .focusRequester(epgReserveButtonRequester)
++                                        .tvPhoneClickable { if (isClickEnabled) showEpgReserveDialog = true }
+                                 ) {
+                                     Text(
+                                         "EPG予約する",
+@@ -359,7 +378,9 @@ fun ProgramDetailScreen(
+                                         containerColor = recordDarkRed,
+                                         contentColor = Color.White
+                                     ),
+-                                    modifier = Modifier.fillMaxWidth()
++                                    modifier = Modifier
++                                        .fillMaxWidth()
++                                        .tvPhoneClickable { if (isClickEnabled) onRecordDetailClick(safeProgram) }
+                                 ) { Text("録画予約（詳細設定）", fontFamily = NotoSansJP) }
+                             }
+                         } else {
+@@ -373,6 +394,7 @@ fun ProgramDetailScreen(
+                                 modifier = Modifier
+                                     .fillMaxWidth()
+                                     .focusRequester(initialFocusRequester)
++                                    .tvPhoneClickable {}
+                             ) {
+                                 Text(
+                                     "終了した番組",
+@@ -392,7 +414,8 @@ fun ProgramDetailScreen(
+                             if (isReadOnly || (isPast && mode == ProgramDetailMode.EPG)) Modifier.focusRequester(
+                                 initialFocusRequester
+                             ) else Modifier
+-                        ),
++                        )
++                        .tvPhoneClickable { if (isClickEnabled) onBackClick() } ,
+                     colors = ButtonDefaults.colors(
+                         containerColor = Color.Transparent,
+                         contentColor = colors.textPrimary,
+diff --git a/app/src/main/java/com/beeregg2001/komorebi/ui/main/MainDialogs.kt b/app/src/main/java/com/beeregg2001/komorebi/ui/main/MainDialogs.kt
+index 9bc181e..9a889d9 100644
+--- a/app/src/main/java/com/beeregg2001/komorebi/ui/main/MainDialogs.kt
++++ b/app/src/main/java/com/beeregg2001/komorebi/ui/main/MainDialogs.kt
+@@ -21,6 +21,7 @@ import com.beeregg2001.komorebi.common.AppStrings
+ import com.beeregg2001.komorebi.common.safeRequestFocus
+ import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
+ import kotlinx.coroutines.delay
++import com.beeregg2001.komorebi.common.tvPhoneClickable
+ 
+ @Composable
+ fun DeleteConfirmationDialog(
+@@ -70,7 +71,9 @@ fun DeleteConfirmationDialog(
+                             containerColor = colors.textPrimary.copy(alpha = 0.1f),
+                             contentColor = colors.textPrimary
+                         ),
+-                        modifier = Modifier.weight(1f)
++                        modifier = Modifier
++                            .weight(1f)
++                            .tvPhoneClickable { onCancel() }
+                     ) { Text(AppStrings.BUTTON_CANCEL) }
+                     Button(
+                         onClick = onConfirm,
+@@ -81,6 +84,7 @@ fun DeleteConfirmationDialog(
+                         modifier = Modifier
+                             .weight(1f)
+                             .focusRequester(focusRequester)
++                            .tvPhoneClickable { onConfirm() }
+                     ) { Text(AppStrings.BUTTON_DELETE) }
+                 }
+             }
+diff --git a/app/src/main/java/com/beeregg2001/komorebi/ui/reserve/AdvancedSettingsDialog.kt b/app/src/main/java/com/beeregg2001/komorebi/ui/reserve/AdvancedSettingsDialog.kt
+index 7b81b28..d85c5d9 100644
+--- a/app/src/main/java/com/beeregg2001/komorebi/ui/reserve/AdvancedSettingsDialog.kt
++++ b/app/src/main/java/com/beeregg2001/komorebi/ui/reserve/AdvancedSettingsDialog.kt
+@@ -45,6 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
+ import androidx.compose.ui.unit.dp
+ import androidx.compose.ui.zIndex
+ import androidx.tv.material3.*
++import com.beeregg2001.komorebi.common.tvPhoneClickable
+ import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
+ import kotlinx.coroutines.delay
+ import kotlinx.coroutines.launch
+@@ -404,7 +405,9 @@ fun PriorityCircleButton(
+             focusedContainerColor = colors.textPrimary,
+             focusedContentColor = if (colors.isDark) Color.Black else Color.White
+         ),
+-        modifier = Modifier.size(32.dp)
++        modifier = Modifier
++            .size(32.dp)
++            .tvPhoneClickable { if (enabled) onClick() }
+     ) {
+         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+             androidx.compose.material3.Icon(
+diff --git a/app/src/main/java/com/beeregg2001/komorebi/ui/reserve/ReserveSettingsDialog.kt b/app/src/main/java/com/beeregg2001/komorebi/ui/reserve/ReserveSettingsDialog.kt
+index 812af2b..e6ce943 100644
+--- a/app/src/main/java/com/beeregg2001/komorebi/ui/reserve/ReserveSettingsDialog.kt
++++ b/app/src/main/java/com/beeregg2001/komorebi/ui/reserve/ReserveSettingsDialog.kt
+@@ -38,6 +38,9 @@ import com.beeregg2001.komorebi.viewmodel.PostRecordingBatch
+ import com.google.gson.Gson
+ import com.google.gson.reflect.TypeToken
+ import kotlinx.coroutines.delay
++import androidx.compose.foundation.rememberScrollState
++import androidx.compose.foundation.verticalScroll
++import com.beeregg2001.komorebi.common.tvPhoneClickable
+ 
+ @RequiresApi(Build.VERSION_CODES.O)
+ @OptIn(ExperimentalTvMaterial3Api::class, ExperimentalComposeUiApi::class)
+@@ -125,7 +128,9 @@ fun ReserveSettingsDialog(
+             )
+         ) {
+             Column(
+-                modifier = Modifier.padding(32.dp),
++                modifier = Modifier
++                    .padding(32.dp)
++                    .verticalScroll(rememberScrollState()),
+                 verticalArrangement = Arrangement.spacedBy(8.dp)
+             ) {
+                 Text(
+@@ -195,7 +200,9 @@ fun ReserveSettingsDialog(
+                         batchList.find { it.path == selectedBatPath }?.name ?: "なし"
+                     Button(
+                         onClick = { isBatSelectionOpen = true },
+-                        modifier = Modifier.focusRequester(batSelectionFocusRequester),
++                        modifier = Modifier
++                            .focusRequester(batSelectionFocusRequester)
++                            .tvPhoneClickable { isBatSelectionOpen = true },
+                         colors = ButtonDefaults.colors(
+                             containerColor = colors.textPrimary.copy(alpha = 0.1f),
+                             contentColor = colors.textPrimary
+@@ -228,6 +235,8 @@ fun ReserveSettingsDialog(
+                 ) {
+                     Button(
+                         onClick = onDismiss,
++                        modifier = Modifier
++                            .tvPhoneClickable { onDismiss() },
+                         colors = ButtonDefaults.colors(
+                             containerColor = Color.Transparent,
+                             contentColor = colors.textSecondary,
+@@ -249,6 +258,17 @@ fun ReserveSettingsDialog(
+                             )
+                             onConfirm(newSettings)
+                         },
++                        modifier = Modifier
++                            .tvPhoneClickable {
++                                val newSettings = initialSettings.copy(
++                                    isEnabled = isEnabled,
++                                    priority = priority,
++                                    recordingMode = "SpecifiedService",
++                                    postRecordingBatFilePath = selectedBatPath,
++                                    isEventRelayFollowEnabled = isEventRelay
++                                )
++                                onConfirm(newSettings)
++                            },
+                         colors = ButtonDefaults.colors(
+                             containerColor = colors.textPrimary.copy(alpha = 0.15f),
+                             contentColor = colors.textPrimary,
+diff --git a/app/src/main/java/com/beeregg2001/komorebi/ui/setting/SettingComponents.kt b/app/src/main/java/com/beeregg2001/komorebi/ui/setting/SettingComponents.kt
+index 6b80fed..c2f3b6f 100644
+--- a/app/src/main/java/com/beeregg2001/komorebi/ui/setting/SettingComponents.kt
++++ b/app/src/main/java/com/beeregg2001/komorebi/ui/setting/SettingComponents.kt
+@@ -64,6 +64,7 @@ import com.google.zxing.BarcodeFormat
+ import com.google.zxing.EncodeHintType
+ import com.google.zxing.qrcode.QRCodeWriter
+ import kotlinx.coroutines.delay
++import com.beeregg2001.komorebi.common.tvPhoneClickable
+ 
+ sealed class SettingDialogState {
+     object None : SettingDialogState()
+@@ -931,7 +932,9 @@ fun SelectionDialogItem(
+ 
+     Surface(
+         onClick = onClick,
+-        modifier = modifier.fillMaxWidth(),
++        modifier = modifier
++            .fillMaxWidth()
++            .tvPhoneClickable { onClick() },
+         interactionSource = interactionSource,
+         colors = ClickableSurfaceDefaults.colors(
+             containerColor = if (isSelected) colors.textPrimary.copy(
+diff --git a/app/src/main/java/com/beeregg2001/komorebi/ui/video/components/RecordListContent.kt b/app/src/main/java/com/beeregg2001/komorebi/ui/video/components/RecordListContent.kt
+index 24b3320..573a94f 100644
+--- a/app/src/main/java/com/beeregg2001/komorebi/ui/video/components/RecordListContent.kt
++++ b/app/src/main/java/com/beeregg2001/komorebi/ui/video/components/RecordListContent.kt
+@@ -150,6 +150,8 @@ fun RecordListContent(
+     LaunchedEffect(isDetailVisible) {
+         if (isDetailVisible) {
+             delay(100); detailPanelFocusRequester.safeRequestFocus("DetailPanelOpened")
++        } else {
++            detailProgram = null
+         }
+     }
+ 

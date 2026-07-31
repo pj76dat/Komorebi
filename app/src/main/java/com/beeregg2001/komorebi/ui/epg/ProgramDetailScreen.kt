@@ -41,6 +41,7 @@ import kotlinx.coroutines.yield
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 enum class ProgramDetailMode {
     EPG, RESERVE
@@ -177,6 +178,7 @@ fun ProgramDetailScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .focusRequester(initialFocusRequester)
+                                .tvPhoneClickable { if (isClickEnabled) onEditReserveClick(safeProgram) }
                         ) {
                             Text(
                                 "予約設定変更",
@@ -191,7 +193,9 @@ fun ProgramDetailScreen(
                                 containerColor = recordRed,
                                 contentColor = Color.White
                             ),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .tvPhoneClickable { if (isClickEnabled) onDeleteReserveClick(safeProgram) }
                         ) {
                             Text(
                                 "予約を削除",
@@ -205,7 +209,8 @@ fun ProgramDetailScreen(
                                 onClick = { if (isClickEnabled) onPlayClick(safeProgram) },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .focusRequester(initialFocusRequester),
+                                    .focusRequester(initialFocusRequester)
+                                    .tvPhoneClickable { if (isClickEnabled) onPlayClick(safeProgram) },
                                 colors = ButtonDefaults.colors(
                                     containerColor = colors.textPrimary,
                                     contentColor = if (colors.isDark) Color.Black else Color.White
@@ -225,7 +230,9 @@ fun ProgramDetailScreen(
                                         containerColor = colors.textPrimary.copy(alpha = 0.1f),
                                         contentColor = colors.textPrimary
                                     ),
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .tvPhoneClickable { if (isClickEnabled) onEditReserveClick(safeProgram) }
                                 ) {
                                     Text(
                                         "予約設定変更",
@@ -239,7 +246,9 @@ fun ProgramDetailScreen(
                                         containerColor = recordRed,
                                         contentColor = Color.White
                                     ),
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .tvPhoneClickable { if (isClickEnabled) onDeleteReserveClick(safeProgram) }
                                 ) {
                                     Text(
                                         "予約を削除",
@@ -250,7 +259,9 @@ fun ProgramDetailScreen(
                             } else {
                                 Button(
                                     onClick = { if (isClickEnabled) onRecordClick(safeProgram) },
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .tvPhoneClickable { if (isClickEnabled) onRecordClick(safeProgram) },
                                     colors = ButtonDefaults.colors(
                                         containerColor = recordRed,
                                         contentColor = Color.White
@@ -271,6 +282,7 @@ fun ProgramDetailScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .focusRequester(epgReserveButtonRequester)
+                                        .tvPhoneClickable { if (isClickEnabled) showEpgReserveDialog = true }
                                 ) {
                                     Text(
                                         "EPG予約する",
@@ -284,7 +296,9 @@ fun ProgramDetailScreen(
                                         containerColor = recordDarkRed,
                                         contentColor = Color.White
                                     ),
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .tvPhoneClickable { if (isClickEnabled) onRecordDetailClick(safeProgram) }
                                 ) { Text("録画する（詳細設定）", fontFamily = NotoSansJP) }
                             }
 
@@ -299,6 +313,7 @@ fun ProgramDetailScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .focusRequester(initialFocusRequester)
+                                        .tvPhoneClickable { if (isClickEnabled) onEditReserveClick(safeProgram) }
                                 ) {
                                     Text(
                                         "予約設定変更",
@@ -312,7 +327,9 @@ fun ProgramDetailScreen(
                                         containerColor = recordRed,
                                         contentColor = Color.White
                                     ),
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .tvPhoneClickable { if (isClickEnabled) onDeleteReserveClick(safeProgram) }
                                 ) {
                                     Text(
                                         "予約を削除",
@@ -325,7 +342,8 @@ fun ProgramDetailScreen(
                                     onClick = { if (isClickEnabled) onRecordClick(safeProgram) },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .focusRequester(initialFocusRequester),
+                                        .focusRequester(initialFocusRequester)
+                                        .tvPhoneClickable { if (isClickEnabled) onRecordClick(safeProgram) },
                                     colors = ButtonDefaults.colors(
                                         containerColor = recordRed,
                                         contentColor = Color.White
@@ -346,6 +364,7 @@ fun ProgramDetailScreen(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .focusRequester(epgReserveButtonRequester)
+                                        .tvPhoneClickable { if (isClickEnabled) showEpgReserveDialog = true }
                                 ) {
                                     Text(
                                         "EPG予約する",
@@ -359,7 +378,9 @@ fun ProgramDetailScreen(
                                         containerColor = recordDarkRed,
                                         contentColor = Color.White
                                     ),
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .tvPhoneClickable { if (isClickEnabled) onRecordDetailClick(safeProgram) }
                                 ) { Text("録画予約（詳細設定）", fontFamily = NotoSansJP) }
                             }
                         } else {
@@ -373,6 +394,7 @@ fun ProgramDetailScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .focusRequester(initialFocusRequester)
+                                    .tvPhoneClickable {}
                             ) {
                                 Text(
                                     "終了した番組",
@@ -392,7 +414,8 @@ fun ProgramDetailScreen(
                             if (isReadOnly || (isPast && mode == ProgramDetailMode.EPG)) Modifier.focusRequester(
                                 initialFocusRequester
                             ) else Modifier
-                        ),
+                        )
+                        .tvPhoneClickable { if (isClickEnabled) onBackClick() } ,
                     colors = ButtonDefaults.colors(
                         containerColor = Color.Transparent,
                         contentColor = colors.textPrimary,

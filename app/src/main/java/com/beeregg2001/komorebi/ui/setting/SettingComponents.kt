@@ -64,6 +64,7 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.QRCodeWriter
 import kotlinx.coroutines.delay
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 sealed class SettingDialogState {
     object None : SettingDialogState()
@@ -907,7 +908,9 @@ fun SelectionDialog(
                                 containerColor = colors.textPrimary.copy(0.1f),
                                 contentColor = colors.textPrimary
                             ),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .tvPhoneClickable { isClosing = true; onDismiss() }
                         ) { Text("キャンセル") }
                     }
                 }
@@ -931,7 +934,9 @@ fun SelectionDialogItem(
 
     Surface(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .tvPhoneClickable { onClick() },
         interactionSource = interactionSource,
         colors = ClickableSurfaceDefaults.colors(
             containerColor = if (isSelected) colors.textPrimary.copy(

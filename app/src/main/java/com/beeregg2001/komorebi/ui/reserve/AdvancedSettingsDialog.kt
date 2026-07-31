@@ -45,6 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.tv.material3.*
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -404,7 +405,9 @@ fun PriorityCircleButton(
             focusedContainerColor = colors.textPrimary,
             focusedContentColor = if (colors.isDark) Color.Black else Color.White
         ),
-        modifier = Modifier.size(32.dp)
+        modifier = Modifier
+            .size(32.dp)
+            .tvPhoneClickable { if (enabled) onClick() }
     ) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             androidx.compose.material3.Icon(

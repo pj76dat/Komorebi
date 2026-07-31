@@ -21,6 +21,7 @@ import com.beeregg2001.komorebi.common.AppStrings
 import com.beeregg2001.komorebi.common.safeRequestFocus
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
 import kotlinx.coroutines.delay
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @Composable
 fun DeleteConfirmationDialog(
@@ -70,7 +71,9 @@ fun DeleteConfirmationDialog(
                             containerColor = colors.textPrimary.copy(alpha = 0.1f),
                             contentColor = colors.textPrimary
                         ),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .tvPhoneClickable { onCancel() }
                     ) { Text(AppStrings.BUTTON_CANCEL) }
                     Button(
                         onClick = onConfirm,
@@ -81,6 +84,7 @@ fun DeleteConfirmationDialog(
                         modifier = Modifier
                             .weight(1f)
                             .focusRequester(focusRequester)
+                            .tvPhoneClickable { onConfirm() }
                     ) { Text(AppStrings.BUTTON_DELETE) }
                 }
             }

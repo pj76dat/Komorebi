@@ -150,6 +150,8 @@ fun RecordListContent(
     LaunchedEffect(isDetailVisible) {
         if (isDetailVisible) {
             delay(100); detailPanelFocusRequester.safeRequestFocus("DetailPanelOpened")
+        } else {
+            detailProgram = null
         }
     }
 
