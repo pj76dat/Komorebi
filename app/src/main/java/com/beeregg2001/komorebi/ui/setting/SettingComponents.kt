@@ -151,7 +151,8 @@ fun CategoryItem(
         modifier = modifier
             .fillMaxWidth()
             .focusProperties { canFocus = enabled }
-            .onFocusChanged { if (it.isFocused && enabled) onFocused() },
+            .onFocusChanged { if (it.isFocused && enabled) onFocused() }
+            .tvPhoneClickable { if (enabled) onClick() },
         interactionSource = interactionSource,
         colors = SelectableSurfaceDefaults.colors(
             containerColor = Color.Transparent,
@@ -215,7 +216,8 @@ fun SettingItem(
         onClick = { if (enabled) onClick() },
         modifier = modifier
             .fillMaxWidth()
-            .focusProperties { canFocus = enabled },
+            .focusProperties { canFocus = enabled }
+            .tvPhoneClickable { if (enabled) onClick() },
         interactionSource = interactionSource,
         colors = ClickableSurfaceDefaults.colors(
             containerColor = colors.textPrimary.copy(alpha = if (enabled) 0.05f else 0.02f),
@@ -1087,7 +1089,9 @@ fun MultiSelectionDialogItem(
 
     Surface(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .tvPhoneClickable { onClick() },
         interactionSource = interactionSource,
         colors = ClickableSurfaceDefaults.colors(
             containerColor = if (isSelected) colors.textPrimary.copy(
@@ -1178,7 +1182,9 @@ fun ConfirmClearDialog(
                             containerColor = colors.textPrimary.copy(alpha = 0.1f),
                             contentColor = colors.textPrimary
                         ),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .tvPhoneClickable { onDismiss() }
                     ) { Text(AppStrings.BUTTON_CANCEL) }
                     Button(
                         onClick = onConfirm,
@@ -1189,6 +1195,7 @@ fun ConfirmClearDialog(
                         modifier = Modifier
                             .weight(1f)
                             .focusRequester(focusRequester)
+                            .tvPhoneClickable { onConfirm() }
                     ) { Text(confirmButtonText) }
                 }
             }
@@ -1441,7 +1448,9 @@ fun SettingToggleItem(
             focusedContentColor = focusedTextColor
         ),
         shape = ClickableSurfaceDefaults.shape(shape = RoundedCornerShape(8.dp)),
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
+            .tvPhoneClickable { onCheckedChange(!checked) }
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(

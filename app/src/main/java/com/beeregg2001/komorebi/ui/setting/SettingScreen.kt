@@ -288,7 +288,9 @@ fun SettingsScreen(
                             onFocused = {
                                 if (uiState.isSidebarFocused) uiState.selectedCategoryIndex = index
                             },
-                            onClick = { targetR.safeRequestFocus("CategoryItem_Click") },
+                            onClick = {
+                                uiState.selectedCategoryIndex = index
+                                targetR.safeRequestFocus("CategoryItem_Click") },
                             enabled = !uiState.isRestoringFocus,
                             modifier = Modifier
                                 .focusRequester(categoryFocusRequesters[index])
