@@ -4,7 +4,9 @@ package com.beeregg2001.komorebi.ui.video.player
 
 import android.os.Build
 import android.util.Log
+import android.view.MotionEvent
 import android.view.SurfaceView
+import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
 import androidx.activity.compose.BackHandler
@@ -45,6 +47,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.UUID
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 
 private const val TAG = "VideoPlayerScreen"
 
@@ -154,6 +158,8 @@ fun VideoPlayerScreen(
         remember { Build.FINGERPRINT.startsWith("generic") || Build.MODEL.contains("google_sdk") }
     val currentSessionId = remember(vs.currentQuality) { UUID.randomUUID().toString() }
     val webViewRef = remember { mutableStateOf<WebView?>(null) }
+
+    val onShowControlsChangeRef = rememberUpdatedState(onShowControlsChange)
 
     val mainFocusRequester = remember { FocusRequester() }
     val subMenuFocusRequester = remember { FocusRequester() }
@@ -491,6 +497,12 @@ fun VideoPlayerScreen(
                     val surfaceView =
                         SurfaceView(ctx).apply { layoutParams = ViewGroup.LayoutParams(-1, -1) }
                     addView(surfaceView)
+                    setOnTouchListener { _: View, event: MotionEvent ->
+                        if (event.action == android.view.MotionEvent.ACTION_UP) {
+                            onShowControlsChangeRef.value(true)
+                        }
+                        false
+                    }
                 }
             },
             update = { view ->
@@ -832,6 +844,18 @@ fun VideoPlayerScreen(
 
             if (!isModern) {
                 PlaybackIndicator(vs.indicatorState)
+            }
+            // ★ Phone tap overlay
+            if (!showControls && !isSubOverlayOpen) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onTap = { onShowControlsChange(true) }
+                            )
+                        }
+                )
             }
         }
     }

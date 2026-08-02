@@ -30,7 +30,7 @@ import com.beeregg2001.komorebi.data.model.RecordedProgram
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
+import androidx.compose.foundation.clickable
 
 /* 画面中央に表示される再生・一時停止等のオーバーレイを表示するメソッド */
 @Composable
@@ -384,6 +384,7 @@ fun AnimatedVisibilityScope.ProgramInfoOverlay( // ★ 修正: AnimatedVisibilit
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.6f))
+            .clickable { onClose() }
             .onKeyEvent {
                 if (it.type == androidx.compose.ui.input.key.KeyEventType.KeyDown) {
                     when (it.nativeKeyEvent.keyCode) {

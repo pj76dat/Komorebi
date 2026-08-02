@@ -40,6 +40,8 @@ import com.beeregg2001.komorebi.data.model.AudioMode
 import kotlinx.coroutines.delay
 import com.beeregg2001.komorebi.data.model.StreamQuality
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
+import com.beeregg2001.komorebi.common.tvPhoneClickable
+import androidx.compose.foundation.clickable
 
 @Composable
 fun VideoTopSubMenuUI(
@@ -293,6 +295,7 @@ fun VideoMenuTileItem(
             .size(width, height)
             // ★ 追加: 非対応項目は半透明にしてグレーアウトを強調
             .alpha(if (enabled) 1f else 0.4f)
+            .tvPhoneClickable { if (enabled) onClick() },
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -398,6 +401,15 @@ fun AnimatedVisibilityScope.ModernVideoSettingsOverlay(
             },
         contentAlignment = Alignment.CenterEnd
     ) {
+        // ★ Tap dark overlay to dismiss
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable {
+                    if (selectedCategory != null) selectedCategory = null
+                    else onClose()
+                }
+        )
         Column(
             modifier = Modifier
                 .animateEnterExit(
@@ -549,6 +561,7 @@ fun ModernSettingRow(
             // ★ 追加: 非対応項目は半透明にしてグレーアウトを強調
             .alpha(if (enabled) 1f else 0.4f)
             .onFocusChanged { isFocused = it.isFocused }
+            .tvPhoneClickable { if (enabled) onClick() },
     ) {
         Row(
             modifier = Modifier

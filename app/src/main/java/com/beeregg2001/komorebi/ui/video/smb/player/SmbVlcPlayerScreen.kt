@@ -57,6 +57,8 @@ import org.videolan.libvlc.Media
 import org.videolan.libvlc.MediaPlayer
 import org.videolan.libvlc.util.VLCVideoLayout
 import org.videolan.libvlc.interfaces.IMedia
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 
 private const val TAG = "SmbVlcPlayerScreen"
 
@@ -823,6 +825,18 @@ fun SmbVlcPlayerScreen(
 
                 if (!isModern || !showControls) {
                     PlaybackIndicator(vs.indicatorState)
+                }
+                // ★ Phone tap overlay
+                if (!showControls && !isSubOverlayOpen) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onTap = { onShowControlsChange(true) }
+                                )
+                            }
+                    )
                 }
             }
         }
