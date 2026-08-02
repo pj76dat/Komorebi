@@ -33,6 +33,7 @@ import androidx.compose.ui.zIndex
 import androidx.tv.material3.*
 import com.beeregg2001.komorebi.common.safeRequestFocus
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 private const val TAG = "RecordScreenTopBar"
 
@@ -101,7 +102,8 @@ fun RecordScreenTopBar(
                         onClick = { onBackPress() },
                         modifier = Modifier
                             .focusRequester(searchCloseButtonFocusRequester)
-                            .focusProperties { up = FocusRequester.Cancel },
+                            .focusProperties { up = FocusRequester.Cancel }
+                        .tvPhoneClickable { onBackPress() }, // スマホタップ対応
                         colors = iconButtonColors
                     ) {
                         Icon(Icons.Default.ArrowBack, "閉じる")
@@ -181,7 +183,9 @@ fun RecordScreenTopBar(
 
                     IconButton(
                         onClick = { onExecuteSearch(searchQuery) },
-                        modifier = Modifier.focusProperties { up = FocusRequester.Cancel },
+                        modifier = Modifier
+                            .focusProperties { up = FocusRequester.Cancel }
+                            .tvPhoneClickable { onExecuteSearch(searchQuery) }, // スマホタップ対応
                         colors = iconButtonColors
                     ) {
                         Icon(Icons.Default.Search, "検索実行")
@@ -219,7 +223,8 @@ fun RecordScreenTopBar(
                             up = FocusRequester.Cancel
                             down = firstItemFocusRequester
                             left = FocusRequester.Cancel
-                        },
+                        }
+                        .tvPhoneClickable { onBackPress() }, // スマホタップ対応
                     colors = iconButtonColors
                 ) {
                     Icon(Icons.Default.ArrowBack, "戻る")
@@ -256,7 +261,8 @@ fun RecordScreenTopBar(
                             .focusProperties {
                                 up = FocusRequester.Cancel
                                 down = firstItemFocusRequester
-                            },
+                            }
+                            .tvPhoneClickable { onSortOpen() }, // スマホタップ対応
                         colors = iconButtonColors
                     ) {
                         Icon(Icons.Default.Sort, "並び替え")
@@ -272,7 +278,8 @@ fun RecordScreenTopBar(
                         .focusProperties {
                             up = FocusRequester.Cancel
                             down = firstItemFocusRequester
-                        },
+                        }
+                        .tvPhoneClickable { onViewToggle() }, // スマホタップ対応
                     shape = ClickableSurfaceDefaults.shape(CircleShape),
                     colors = ClickableSurfaceDefaults.colors(
                         containerColor = colors.surface.copy(alpha = 0.5f),
@@ -324,7 +331,8 @@ fun RecordScreenTopBar(
                         .focusProperties {
                             up = FocusRequester.Cancel
                             down = firstItemFocusRequester
-                        },
+                        }
+                        .tvPhoneClickable { onSearchOpen() }, // スマホタップ対応
                     colors = iconButtonColors
                 ) {
                     Icon(Icons.Default.Search, "検索")

@@ -44,6 +44,7 @@ import kotlinx.coroutines.delay
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 private const val TAG = "VideoTabContent"
 
@@ -466,7 +467,8 @@ fun VideoTabContent(
                                                 isFocused =
                                                     it.hasFocus; if (isFocused) focusedProgramId =
                                                 null
-                                            },
+                                            }
+                                            .tvPhoneClickable { recordViewModel.updateSeriesGenre(genre) }, // スマホタップ対応
                                         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
                                         colors = ClickableSurfaceDefaults.colors(
                                             containerColor = if (isSelected) colors.textPrimary else Color.Transparent,

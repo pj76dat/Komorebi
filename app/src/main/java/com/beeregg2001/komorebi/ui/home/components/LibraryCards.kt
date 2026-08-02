@@ -45,6 +45,7 @@ import kotlinx.coroutines.delay
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -107,7 +108,8 @@ fun VideoRecentRecordCard(
             .width(280.dp)
             .height(160.dp)
             .focusRequester(specificRequester)
-            .onFocusChanged { isFocused = it.isFocused || it.hasFocus; if (isFocused) onFocus() },
+            .onFocusChanged { isFocused = it.isFocused || it.hasFocus; if (isFocused) onFocus() }
+            .tvPhoneClickable { onClick() }, // スマホタップ対応
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
         colors = ClickableSurfaceDefaults.colors(
             containerColor = colors.surface.copy(alpha = 0.5f),
@@ -273,7 +275,8 @@ fun VideoWatchHistoryCard(
             .width(280.dp)
             .height(160.dp)
             .focusRequester(specificRequester)
-            .onFocusChanged { isFocused = it.isFocused || it.hasFocus; if (isFocused) onFocus() },
+            .onFocusChanged { isFocused = it.isFocused || it.hasFocus; if (isFocused) onFocus() }
+            .tvPhoneClickable { onClick() }, // スマホタップ対応
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
         colors = ClickableSurfaceDefaults.colors(
             containerColor = colors.surface.copy(alpha = 0.5f),
@@ -399,7 +402,8 @@ fun VideoSeriesCard(
         modifier = modifier
             .width(280.dp)
             .height(160.dp)
-            .onFocusChanged { isFocused = it.isFocused || it.hasFocus; if (isFocused) onFocus() },
+            .onFocusChanged { isFocused = it.isFocused || it.hasFocus; if (isFocused) onFocus() }
+            .tvPhoneClickable { onClick() }, // スマホタップ対応
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
         colors = ClickableSurfaceDefaults.colors(
             containerColor = colors.surface.copy(alpha = 0.5f),
@@ -483,7 +487,8 @@ fun RecordListBannerButton(
         onClick = onClick,
         modifier = modifier
             .height(88.dp)
-            .onFocusChanged { isFocused = it.isFocused || it.hasFocus; if (isFocused) onFocus() },
+            .onFocusChanged { isFocused = it.isFocused || it.hasFocus; if (isFocused) onFocus() }
+            .tvPhoneClickable { onClick() }, // スマホタップ対応
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
         shape = ClickableSurfaceDefaults.shape(RoundedCornerShape(12.dp)),
         colors = ClickableSurfaceDefaults.colors(
@@ -579,7 +584,8 @@ fun SmbLibraryBannerButton(
         onClick = onClick,
         modifier = modifier
             .height(88.dp)
-            .onFocusChanged { isFocused = it.isFocused || it.hasFocus; if (isFocused) onFocus() },
+            .onFocusChanged { isFocused = it.isFocused || it.hasFocus; if (isFocused) onFocus() }
+            .tvPhoneClickable { onClick() }, // スマホタップ対応
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
         shape = ClickableSurfaceDefaults.shape(RoundedCornerShape(12.dp)),
         colors = ClickableSurfaceDefaults.colors(

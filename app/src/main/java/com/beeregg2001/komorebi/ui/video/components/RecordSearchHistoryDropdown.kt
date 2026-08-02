@@ -25,6 +25,7 @@ import androidx.compose.ui.zIndex
 import androidx.tv.material3.*
 import com.beeregg2001.komorebi.common.safeRequestFocus
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 private const val TAG = "RecordSearchHistoryDropdown"
 
@@ -103,7 +104,8 @@ fun RecordSearchHistoryDropdown(
                             if (index == 0) {
                                 up = searchInputFocusRequester
                             }
-                        },
+                        }
+                        .tvPhoneClickable { onExecuteSearch(historyItem) }, // スマホタップ対応
                     scale = ClickableSurfaceDefaults.scale(focusedScale = 1.0f),
                     border = ClickableSurfaceDefaults.border(
                         focusedBorder = Border(BorderStroke(2.dp, colors.accent))

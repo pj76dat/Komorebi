@@ -22,6 +22,7 @@ import androidx.tv.material3.*
 import com.beeregg2001.komorebi.common.safeRequestFocus
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
 import kotlinx.coroutines.delay
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @OptIn(ExperimentalTvMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -90,7 +91,8 @@ fun RecordDayPane(
                                         else -> false
                                     }
                                 } else false
-                            },
+                            }
+                            .tvPhoneClickable { onDaySelect(day) }, // スマホタップ対応
                         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
                         colors = ClickableSurfaceDefaults.colors(
                             containerColor = if (isSelected) colors.accent.copy(alpha = 0.15f) else Color.Transparent,

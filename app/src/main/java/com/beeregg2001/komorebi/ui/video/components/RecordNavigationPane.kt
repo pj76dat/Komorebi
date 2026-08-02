@@ -19,6 +19,9 @@ import com.beeregg2001.komorebi.common.safeRequestFocus
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
 import com.beeregg2001.komorebi.ui.video.FocusTicket
 import com.beeregg2001.komorebi.ui.video.FocusTicketManager
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
@@ -57,6 +60,7 @@ fun RecordNavigationPane(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState()) // スマホタップ対応
                 .padding(vertical = 16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.Start
@@ -98,6 +102,7 @@ private fun NavigationItem(
             .height(48.dp)
             .padding(horizontal = 12.dp)
             .onFocusChanged { isFocused = it.isFocused }
+            .tvPhoneClickable { onClick() } // スマホタップ対応
             .onKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionRight) {
                     if (isOverlay) {

@@ -46,6 +46,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Dp
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @OptIn(ExperimentalTvMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -150,6 +151,7 @@ fun RecordSeriesGridContent(
                     }
                     false
                 }
+                .tvPhoneClickable { onSeriesClick(series.searchKeyword) } // スマホタップ対応
 
             Surface(
                 onClick = { onSeriesClick(series.searchKeyword) }, modifier = itemModifier,

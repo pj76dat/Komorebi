@@ -55,6 +55,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Dp
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @SuppressLint("RememberInComposition")
 @RequiresApi(Build.VERSION_CODES.O)
@@ -149,6 +150,8 @@ fun RecordListContent(
     LaunchedEffect(isDetailVisible) {
         if (isDetailVisible) {
             delay(100); detailPanelFocusRequester.safeRequestFocus("DetailPanelOpened")
+        } else {
+            detailProgram = null // スマホタップ対応
         }
     }
 
@@ -444,7 +447,8 @@ private fun SideMenuItem(
         modifier = modifier
             .fillMaxWidth()
             .height(44.dp)
-            .alpha(if (enabled) 1f else 0.5f),
+            .alpha(if (enabled) 1f else 0.5f)
+            .tvPhoneClickable { if (enabled) onClick() }, // スマホタップ対応
         colors = ClickableSurfaceDefaults.colors(
             containerColor = Color.Transparent,
             focusedContainerColor = colors.textPrimary,

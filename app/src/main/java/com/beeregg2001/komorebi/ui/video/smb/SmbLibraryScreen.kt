@@ -60,6 +60,7 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalTvMaterial3Api::class)
@@ -698,7 +699,8 @@ private fun SmbMenuButton(
             .fillMaxWidth()
             .height(48.dp)
             .padding(horizontal = 12.dp)
-            .onFocusChanged { isFocused = it.isFocused },
+            .onFocusChanged { isFocused = it.isFocused }
+            .tvPhoneClickable { onClick() }, // スマホタップ対応
         colors = ClickableSurfaceDefaults.colors(
             containerColor = Color.Transparent,
             focusedContainerColor = colors.textPrimary,
@@ -760,7 +762,8 @@ private fun SmbSideMenuItem(
         modifier = modifier
             .fillMaxWidth()
             .height(44.dp)
-            .onFocusChanged { isFocused = it.isFocused },
+            .onFocusChanged { isFocused = it.isFocused }
+            .tvPhoneClickable { onClick() }, // スマホタップ対応
         colors = ClickableSurfaceDefaults.colors(
             containerColor = Color.Transparent,
             focusedContainerColor = colors.textPrimary,

@@ -32,6 +32,7 @@ import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 private val COLOR_GR = Color(0xFF1E88E5)
 private val COLOR_BS = Color(0xFFE53935)
@@ -120,6 +121,7 @@ fun RecordListItem(
             .fillMaxWidth()
             .height(56.dp)
             .onFocusChanged { isFocused = it.isFocused }
+            .tvPhoneClickable { if (isAnalyzed) onClick() } // スマホタップ対応
             .alpha(if (isAnalyzed) 1f else 0.5f),
         shape = ClickableSurfaceDefaults.shape(RoundedCornerShape(4.dp)),
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.02f),
