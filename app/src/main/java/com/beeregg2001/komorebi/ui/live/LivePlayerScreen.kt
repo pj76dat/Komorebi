@@ -52,6 +52,14 @@ import java.util.Collections
 import android.graphics.Color as AndroidColor
 import master.flame.danmaku.controller.IDanmakuView
 import master.flame.danmaku.danmaku.model.BaseDanmaku
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.clickable
+import android.content.Context
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Settings
 
 private const val TAG = "LivePlayerScreen"
 
@@ -565,7 +573,7 @@ fun LivePlayerScreen(
                         val isAnamorphic =
                             (videoWidth == 1440 && videoHeight == 1080 && pixelWidthHeightRatio == 1.0f)
                         val targetMode =
-                            if (isAnamorphic || ratio >= 1.7f) AspectRatioFrameLayout.RESIZE_MODE_FILL else AspectRatioFrameLayout.RESIZE_MODE_FIT
+                            if (isAnamorphic || ratio >= 1.7f) AspectRatioFrameLayout.RESIZE_MODE_FIT else AspectRatioFrameLayout.RESIZE_MODE_FIT
                         if (view.resizeMode != targetMode) view.resizeMode = targetMode
                     }
                 },
@@ -730,16 +738,60 @@ fun LivePlayerScreen(
             enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
             exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
         ) {
-            LiveOverlayUI(
-                channel = currentChannelItem,
-                programTitle = currentChannelItem.programPresent?.title
-                    ?: AppStrings.PROGRAM_INFO_NONE,
-                logoUrl = currentLogoUrl,
-                shouldCropLogo = shouldCropLogo,
-                showDesc = isManualOverlay,
-                isRecording = isRecording,
-                scrollState = scrollState,
-                timeFormatSetting = timeFormat
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable {
+                        onShowOverlayChange(false)
+                        onManualOverlayChange(false)
+                    }
+            ) {
+                LiveOverlayUI(
+                    channel = currentChannelItem,
+                    programTitle = currentChannelItem.programPresent?.title
+                        ?: AppStrings.PROGRAM_INFO_NONE,
+                    logoUrl = currentLogoUrl,
+                    shouldCropLogo = shouldCropLogo,
+                    showDesc = isManualOverlay,
+                    isRecording = isRecording,
+                    scrollState = scrollState,
+                    timeFormatSetting = timeFormat
+                )
+                val isTv = remember {
+                    val uiModeManager = uiContext.getSystemService(Context.UI_MODE_SERVICE) as android.app.UiModeManager
+                    uiModeManager.currentModeType == android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
+                }
+                if (!isTv) {
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        IconButton(onClick = { onSubMenuToggle(true) }) {
+                            Icon(Icons.Default.Settings, contentDescription = "設定", tint = Color.White)
+                        }
+                        IconButton(onClick = { onMiniListToggle(true) }) {
+                            Icon(Icons.Default.List, contentDescription = "チャンネル", tint = Color.White)
+                        }
+                    }
+                }
+            }
+        }
+
+        // ★ Phone tap overlay to show controls
+        if (!isPiPMode && !showOverlay && !isSubMenuOpen && !isMiniListOpen && ps.lCropMode == LCropMode.HIDDEN) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onTap = {
+                                onShowOverlayChange(true)
+                                onManualOverlayChange(true)
+                            }
+                        )
+                    }
             )
         }
 
@@ -909,7 +961,6 @@ fun LivePlayerScreen(
                 }
             )
         }
-
         if (!isPiPMode && ps.playerError != null) {
             LiveErrorDialog(
                 ps.playerError!!,

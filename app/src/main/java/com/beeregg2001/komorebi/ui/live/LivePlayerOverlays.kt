@@ -31,6 +31,7 @@ import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 /**
  * REGZA風の信号情報オーバーレイ
@@ -678,7 +679,9 @@ private fun AdjustmentButton(
             focusedContainerColor = colors.textPrimary,
             focusedContentColor = focusedContentColor
         ),
-        modifier = Modifier.size(36.dp)
+        modifier = Modifier
+            .size(36.dp)
+            .tvPhoneClickable { onClick() }
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             Icon(icon, null, modifier = Modifier.size(24.dp))
