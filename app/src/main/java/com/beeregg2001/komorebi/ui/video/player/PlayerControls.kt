@@ -57,6 +57,7 @@ import kotlinx.coroutines.delay
 import java.util.Locale
 import kotlin.math.floor
 import kotlin.math.pow
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
@@ -618,6 +619,7 @@ fun OsdIconButton(
                 }
                 false
             }
+            .tvPhoneClickable { onClick() } // スマホタップ対応
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             Icon(icon, contentDescription = label, modifier = Modifier.size(iconSize))

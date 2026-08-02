@@ -30,7 +30,8 @@ import com.beeregg2001.komorebi.data.model.RecordedProgram
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
+import com.beeregg2001.komorebi.common.tvPhoneClickable
+import androidx.compose.foundation.clickable
 
 /* 画面中央に表示される再生・一時停止等のオーバーレイを表示するメソッド */
 @Composable
@@ -225,7 +226,8 @@ fun VideoLCropOverlay(
                             onClick = { state.lCropMode = LCropMode.DIRECT_ADJUST },
                             modifier = Modifier
                                 .fillMaxWidth(0.9f)
-                                .focusRequester(menuFocusRequester),
+                                .focusRequester(menuFocusRequester)
+                                .tvPhoneClickable { state.lCropMode = LCropMode.DIRECT_ADJUST }, // スマホタップ対応
                             colors = ButtonDefaults.colors(
                                 containerColor = colors.accent,
                                 contentColor = focusedContentColor,
@@ -240,7 +242,9 @@ fun VideoLCropOverlay(
 
                         Button(
                             onClick = onClose,
-                            modifier = Modifier.fillMaxWidth(0.9f),
+                            modifier = Modifier
+                                .fillMaxWidth(0.9f)
+                                .tvPhoneClickable { onClose() }, // スマホタップ対応
                             colors = ButtonDefaults.colors(
                                 containerColor = colors.textPrimary.copy(alpha = 0.1f),
                                 contentColor = colors.textPrimary,
@@ -315,7 +319,15 @@ fun VideoLCropOverlay(
                                     contentColor = colors.textPrimary,
                                     focusedContainerColor = colors.textPrimary,
                                     focusedContentColor = focusedContentColor
-                                )
+                                ),
+                                modifier = Modifier.tvPhoneClickable { // スマホタップ対応
+                                    state.lCropOrigin = when (state.lCropOrigin) {
+                                        ZoomOrigin.TopLeft -> ZoomOrigin.TopRight
+                                        ZoomOrigin.TopRight -> ZoomOrigin.BottomRight
+                                        ZoomOrigin.BottomRight -> ZoomOrigin.BottomLeft
+                                        ZoomOrigin.BottomLeft -> ZoomOrigin.TopLeft
+                                    }
+                                }
                             ) {
                                 Text(state.lCropOrigin.name, fontWeight = FontWeight.Bold)
                             }
@@ -349,7 +361,9 @@ private fun VideoAdjustmentButton(
             focusedContainerColor = colors.textPrimary,
             focusedContentColor = focusedContentColor
         ),
-        modifier = Modifier.size(36.dp)
+        modifier = Modifier
+            .size(36.dp)
+            .tvPhoneClickable { onClick() } // スマホタップ対応
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             Icon(icon, null, modifier = Modifier.size(24.dp))
@@ -384,6 +398,7 @@ fun AnimatedVisibilityScope.ProgramInfoOverlay( // ★ 修正: AnimatedVisibilit
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.6f))
+            .clickable { onClose() } // スマホタップ対応
             .onKeyEvent {
                 if (it.type == androidx.compose.ui.input.key.KeyEventType.KeyDown) {
                     when (it.nativeKeyEvent.keyCode) {

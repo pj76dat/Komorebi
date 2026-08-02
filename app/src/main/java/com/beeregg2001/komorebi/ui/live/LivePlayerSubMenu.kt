@@ -33,6 +33,7 @@ import kotlinx.coroutines.delay
 import com.beeregg2001.komorebi.data.model.StreamQuality
 import com.beeregg2001.komorebi.data.model.StreamSource
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 enum class LiveSubMenuCategory {
     AUDIO, QUALITY, SOURCE
@@ -476,6 +477,7 @@ fun LiveMenuTileItem(
         modifier = modifier
             .size(width, height)
             .alpha(if (enabled) 1f else 0.5f)
+            .tvPhoneClickable { if (enabled) onClick() } // スマホタップ対応
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),

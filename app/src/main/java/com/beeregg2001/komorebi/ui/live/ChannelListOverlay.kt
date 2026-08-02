@@ -38,6 +38,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.beeregg2001.komorebi.data.model.Channel
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
@@ -135,7 +136,8 @@ fun ChannelListOverlay(
                             .focusRequester(requester)
                             .focusProperties {
                                 down = FocusRequester.Default
-                            },
+                            }
+                            .tvPhoneClickable { selectedTab = tabKey }, // スマホタップ対応
                         interactionSource = interactionSource
                     ) {
                         Text(

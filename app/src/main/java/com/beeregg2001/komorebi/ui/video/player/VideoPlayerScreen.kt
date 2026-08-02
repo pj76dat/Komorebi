@@ -45,6 +45,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.UUID
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 
 private const val TAG = "VideoPlayerScreen"
 
@@ -832,6 +834,18 @@ fun VideoPlayerScreen(
 
             if (!isModern) {
                 PlaybackIndicator(vs.indicatorState)
+            }
+
+            if (!showControls && !isSubOverlayOpen) { // スマホタップ対応
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onTap = { onShowControlsChange(true) }
+                            )
+                        }
+                )
             }
         }
     }
