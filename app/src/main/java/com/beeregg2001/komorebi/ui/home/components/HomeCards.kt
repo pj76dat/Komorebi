@@ -37,6 +37,7 @@ import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @Composable
 fun LastWatchedChannelCard(
@@ -66,7 +67,8 @@ fun LastWatchedChannelCard(
             .onFocusChanged {
                 isFocused = it.isFocused
                 if (it.isFocused) onFocus()
-            },
+            }
+            .tvPhoneClickable { onClick() }, // スマホタッチ対応
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
         colors = ClickableSurfaceDefaults.colors(
             containerColor = colors.surface.copy(alpha = if (isFocused) 1f else 0.6f),
@@ -165,7 +167,8 @@ fun HotChannelCard(
             .onFocusChanged {
                 isFocused = it.isFocused
                 if (it.isFocused) onFocus()
-            },
+            }
+            .tvPhoneClickable { onClick() }, // スマホタッチ対応
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
         colors = ClickableSurfaceDefaults.colors(
             containerColor = colors.surface.copy(alpha = if (isFocused) 1f else 0.6f),
@@ -297,7 +300,8 @@ fun WatchHistoryCard(
                 isFocused = it.isFocused
                 // LaunchedEffect側でも呼ぶが、フォーカス時も確実に呼ぶ
                 if (it.isFocused) onFocus(progress, currentThumbnailUrl)
-            },
+            }
+            .tvPhoneClickable { onClick() }, // スマホタッチ対応
         shape = ClickableSurfaceDefaults.shape(RoundedCornerShape(8.dp)),
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
         colors = ClickableSurfaceDefaults.colors(
@@ -418,7 +422,8 @@ fun UpcomingReserveCard(
             .onFocusChanged {
                 isFocused = it.isFocused
                 if (it.isFocused) onFocus(startFormat)
-            },
+            }
+            .tvPhoneClickable { onClick() }, // スマホタッチ対応
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
         colors = ClickableSurfaceDefaults.colors(
             containerColor = colors.surface.copy(alpha = if (isFocused) 1f else 0.6f),
@@ -519,7 +524,8 @@ fun GenrePickupCard(
             .onFocusChanged {
                 isFocused = it.isFocused
                 if (it.isFocused) onFocus(startFormat)
-            },
+            }
+            .tvPhoneClickable { onClick() }, // スマホタッチ対応
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
         colors = ClickableSurfaceDefaults.colors(
             containerColor = colors.surface.copy(alpha = baseAlpha),

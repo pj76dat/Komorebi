@@ -37,6 +37,7 @@ import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
 import com.beeregg2001.komorebi.ui.theme.getSeasonalIcon
 import com.beeregg2001.komorebi.viewmodel.HomeViewModel
 import kotlinx.coroutines.delay
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @Composable
 fun SectionHeader(title: String, icon: ImageVector, modifier: Modifier = Modifier) {
@@ -66,7 +67,9 @@ fun NavigationLinkButton(label: String, icon: ImageVector, onClick: () -> Unit) 
                 focusedContentColor = if (colors.isDark) Color.Black else Color.White
             ),
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-            modifier = Modifier.height(40.dp)
+            modifier = Modifier
+                .height(40.dp)
+                .tvPhoneClickable { onClick() } // スマホタッチ対応
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(icon, null, modifier = Modifier.size(16.dp))
