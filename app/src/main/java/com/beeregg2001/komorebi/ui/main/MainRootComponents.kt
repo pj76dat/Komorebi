@@ -39,6 +39,7 @@ import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
 import com.beeregg2001.komorebi.util.UpdateState
 import com.beeregg2001.komorebi.viewmodel.RecordViewModel
 import kotlinx.coroutines.delay
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @Composable
 fun AiTextInputDialog(
@@ -104,7 +105,9 @@ fun AiTextInputDialog(
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         Button(
                             onClick = onDismiss,
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .tvPhoneClickable { onDismiss() },
                             colors = ButtonDefaults.colors(
                                 containerColor = colors.textPrimary.copy(alpha = 0.1f),
                                 contentColor = colors.textPrimary
@@ -112,7 +115,9 @@ fun AiTextInputDialog(
                         ) { Text("キャンセル") }
                         Button(
                             onClick = { onSubmit(text) },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .tvPhoneClickable { onSubmit(text) },
                             colors = ButtonDefaults.colors(
                                 containerColor = colors.accent,
                                 contentColor = if (colors.isDark) Color.Black else Color.White
@@ -205,7 +210,9 @@ fun RobustUpdateDialog(
                 ) {
                     Button(
                         onClick = onDismiss,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .tvPhoneClickable { onDismiss() },
                         scale = ButtonDefaults.scale(focusedScale = 1.05f),
                         colors = ButtonDefaults.colors(
                             containerColor = colors.textPrimary.copy(alpha = 0.1f),
@@ -218,7 +225,8 @@ fun RobustUpdateDialog(
                         onClick = onConfirm,
                         modifier = Modifier
                             .weight(1f)
-                            .focusRequester(confirmRequester),
+                            .focusRequester(confirmRequester)
+                            .tvPhoneClickable { onConfirm() },
                         scale = ButtonDefaults.scale(focusedScale = 1.05f),
                         colors = ButtonDefaults.colors(
                             containerColor = colors.accent,
@@ -326,7 +334,9 @@ fun SyncErrorDialog(errorMessage: String, onRetry: () -> Unit, onDismiss: () -> 
                             containerColor = colors.textPrimary.copy(alpha = 0.1f),
                             contentColor = colors.textPrimary
                         ),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .tvPhoneClickable { onDismiss() }
                     ) { Text("閉じる") }
                     Button(
                         onClick = onRetry,
@@ -337,6 +347,7 @@ fun SyncErrorDialog(errorMessage: String, onRetry: () -> Unit, onDismiss: () -> 
                         modifier = Modifier
                             .weight(1f)
                             .focusRequester(focusRequester)
+                            .tvPhoneClickable { onRetry() }
                     ) { Text("再実行") }
                 }
             }
@@ -404,7 +415,9 @@ fun UpdateDialog(
                             containerColor = colors.textPrimary.copy(alpha = 0.1f),
                             contentColor = colors.textPrimary
                         ),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .tvPhoneClickable { onDismiss() }
                     ) { Text("後で") }
                     Button(
                         onClick = onConfirm,
@@ -415,6 +428,7 @@ fun UpdateDialog(
                         modifier = Modifier
                             .weight(1f)
                             .focusRequester(focusRequester)
+                            .tvPhoneClickable { onConfirm() }
                     ) { Text("今すぐ更新") }
                 }
             }

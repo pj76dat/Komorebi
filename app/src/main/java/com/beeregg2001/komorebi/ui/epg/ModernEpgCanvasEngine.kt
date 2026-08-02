@@ -618,7 +618,6 @@ fun EpgHeaderSection(
                     false
                 }
                 .focusable()
-                .tvPhoneClickable { onEpgJumpMenuStateChanged(true) }
                 .background(if (isJumpBtnFocused) colors.textPrimary else Color.Transparent),
             contentAlignment = Alignment.Center
         ) {

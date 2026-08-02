@@ -64,6 +64,7 @@ import androidx.tv.material3.Surface
 import androidx.tv.material3.SurfaceDefaults
 import com.beeregg2001.komorebi.common.safeRequestFocus
 import com.beeregg2001.komorebi.common.safeRequestFocusWithRetry
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 import com.beeregg2001.komorebi.data.model.RecordedProgram
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
 import com.beeregg2001.komorebi.ui.video.components.*
@@ -73,6 +74,7 @@ import com.beeregg2001.komorebi.viewmodel.RecordViewModel
 import com.beeregg2001.komorebi.viewmodel.SeriesInfo
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
@@ -907,7 +909,8 @@ private fun SortMenuItem(
         modifier = modifier
             .fillMaxWidth()
             .height(44.dp)
-            .onFocusChanged { isFocused = it.isFocused },
+            .onFocusChanged { isFocused = it.isFocused }
+            .tvPhoneClickable { onClick() },
         colors = ClickableSurfaceDefaults.colors(
             containerColor = Color.Transparent,
             focusedContainerColor = colors.textPrimary,
