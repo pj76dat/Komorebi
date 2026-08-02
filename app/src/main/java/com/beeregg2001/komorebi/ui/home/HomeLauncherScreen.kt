@@ -41,6 +41,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 private const val TAG = "HomeLauncher"
 
@@ -429,7 +430,17 @@ fun HomeLauncherScreen(
                                         if (index == 0) {
                                             left = FocusRequester.Cancel
                                         }
-                                    }) {
+                                    }
+                                    .tvPhoneClickable {
+                                        ui.selectedTabIndex = index
+                                        ui.onTabSelected(
+                                            index, tabs, onTabChange,
+                                            homeViewModel, channelViewModel,
+                                            recordViewModel, reserveViewModel
+                                        )
+                                        ui.topNavHasFocus = true
+                                    }
+                            ) {
                                 Text(
                                     text = title,
                                     modifier = Modifier.padding(
@@ -495,7 +506,8 @@ fun HomeLauncherScreen(
                                 canFocus = !isEpgJumping
                                 up = FocusRequester.Cancel
                                 right = FocusRequester.Cancel
-                            },
+                            }
+                            .tvPhoneClickable { onSettingsToggle(true) },
                         colors = IconButtonDefaults.colors(
                             focusedContainerColor = colors.textPrimary,
                             focusedContentColor = if (colors.isDark) Color.Black else Color.White,
