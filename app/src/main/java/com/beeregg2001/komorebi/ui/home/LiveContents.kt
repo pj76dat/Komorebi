@@ -57,6 +57,7 @@ import kotlinx.coroutines.delay
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.beeregg2001.komorebi.common.tvPhoneClickable
 
 private const val TAG = "LiveContent"
 
@@ -590,7 +591,8 @@ fun CompactChannelCard(
             .width(140.dp)
             .height(76.dp)
             .graphicsLayer { scaleX = animatedScale; scaleY = animatedScale }
-            .onFocusChanged { isFocused = it.isFocused },
+            .onFocusChanged { isFocused = it.isFocused }
+            .tvPhoneClickable { onClick() },
         shape = ClickableSurfaceDefaults.shape(RoundedCornerShape(8.dp)),
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.0f),
         colors = ClickableSurfaceDefaults.colors(
