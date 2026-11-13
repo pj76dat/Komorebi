@@ -37,6 +37,8 @@ import kotlinx.coroutines.launch
 import java.time.LocalTime
 import androidx.compose.runtime.collectAsState
 import androidx.media3.common.util.Log
+import com.beeregg2001.komorebi.common.DeviceType // * スマホ対応
+import com.beeregg2001.komorebi.ui.phone.PhoneRootScreen // * スマホ対応
 
 private const val TAG = "MainRootScreen"
 
@@ -54,6 +56,27 @@ fun MainRootScreen(
     onExitApp: () -> Unit
 ) {
     val context = LocalContext.current
+
+    // ★ スマホ対応: Android TVで実行されていない場合は、この関数の以降の処理
+    // （TV用のUI一式）を一切実行せず、PhoneRootScreen へ丸ごとルーティングして
+    // return する。
+    // TVへの影響なし: DeviceType.isPhone() は UiModeManager.currentModeType が
+    // UI_MODE_TYPE_TELEVISION かどうかで判定しており、実機のAndroid TVでは
+    // 必ず false になる。つまりこの if ブロックはTV上では構造的に到達不可能で、
+    // 以下に続く既存のTV用コードは一切変更せずそのまま実行される。
+    if (DeviceType.isPhone(context)) {
+        PhoneRootScreen(
+            channelViewModel = channelViewModel,
+            epgViewModel = epgViewModel,
+            homeViewModel = homeViewModel,
+            settingsViewModel = settingsViewModel,
+            recordViewModel = recordViewModel,
+            reserveViewModel = reserveViewModel,
+            onExitApp = onExitApp
+        )
+        return
+    }
+
     val scope = rememberCoroutineScope()
     val state = rememberMainRootState()
 
