@@ -1,9 +1,19 @@
 <resources>
     <style name="Theme.Komorebi" parent="Theme.Material3.Dark.NoActionBar">
         <item name="android:windowBackground">@color/background_dark</item>
+        <!-- ★ スマホ対応: ステータスバーの色をデフォルトのMaterial3紫ではなく
+             アプリの背景色に合わせた。Compose起動後はKomorebiThemeが実際の
+             テーマ設定（ライト/ダーク/時間連動）に合わせて動的に上書きするが、
+             Composeが走り出す前の最初のフレームで見える色としてここでも
+             合わせておく。
+             TVへの影響なし: Android TVはシステムのステータスバー（時刻・電波・
+             バッテリー等）自体を表示しないため、この属性はTV上で参照されない。 -->
+        <item name="android:statusBarColor">@color/background_dark</item>
     </style>
 
     <style name="Theme_Komorebi_Starting" parent="Theme.Komorebi">
         <item name="android:windowBackground">@color/background_dark</item>
+        <!-- ★ スマホ対応: 上のTheme.Komorebiと同じ理由・同じ効果。 -->
+        <item name="android:statusBarColor">@color/background_dark</item>
     </style>
 </resources>
