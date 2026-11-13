@@ -8,6 +8,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures // * スマホ対応
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
@@ -18,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput // * スマホ対応
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
@@ -36,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.tv.material3.*
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.beeregg2001.komorebi.common.tvPhoneClickable // * スマホ対応
 import com.beeregg2001.komorebi.data.model.Channel
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
 
@@ -84,6 +87,20 @@ fun ChannelListOverlay(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
+            // ★ スマホ対応: このパネル自体へのタップを、下に敷いている画面全体の
+            // 「外側タップで閉じる」用スクリムまで貫通させないようにする（パネル
+            // 内の何もない余白をタップしても閉じてしまわないように、ここで
+            // タップ自体を消費して止める）。
+            // TVへの影響なし: 当初 Modifier.clickable() で実装したが、これは
+            // 内部で focusable() も付与してしまい、TVのD-padフォーカス順序に
+            // 巨大な（パネル全体サイズの）余分な停止点が増えてしまう問題が
+            // あったため、pointerInput + detectTapGestures に変更した。この
+            // 組み合わせはポインター（タッチ）入力だけを消費し、フォーカス
+            // システムには一切関与しないため、TVのキー操作/フォーカス移動には
+            // 影響しない。
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {})
+            }
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
@@ -131,11 +148,24 @@ fun ChannelListOverlay(
                     Tab(
                         selected = isSelected,
                         onFocus = { selectedTab = tabKey },
+                        // ★ スマホ対応: この Tab（GR/BS/CS等の種別切替）は onFocus
+                        // だけで選択される実装で、TVのD-pad移動で自動的に選択される
+                        // 一方、タップだけでは切り替わらなかった。.tvPhoneClickable
+                        // でタップでも選択できるようにした。
+                        // TVへの影響なし: この Tab には元々「クリック」の概念（別途の
+                        // onClickパラメータ）が無く、フォーカスが乗った時点で
+                        // onFocusにより選択される。tvPhoneClickable が追加する
+                        // OK/Enterキーでの選択は、フォーカス移動により既に選択済みの
+                        // タブに対して同じ値を再代入するだけの冪等な操作になるため、
+                        // TVのD-pad移動での選択動作自体は一切変えない。タップ用の
+                        // pointerInput部分もタッチスクリーンの無いTVでは物理的に
+                        // 発火しない。
                         modifier = Modifier
                             .focusRequester(requester)
                             .focusProperties {
                                 down = FocusRequester.Default
-                            },
+                            }
+                            .tvPhoneClickable { selectedTab = tabKey },
                         interactionSource = interactionSource
                     ) {
                         Text(

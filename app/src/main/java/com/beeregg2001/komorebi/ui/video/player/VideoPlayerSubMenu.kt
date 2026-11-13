@@ -40,6 +40,9 @@ import com.beeregg2001.komorebi.data.model.AudioMode
 import kotlinx.coroutines.delay
 import com.beeregg2001.komorebi.data.model.StreamQuality
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
+import com.beeregg2001.komorebi.common.tvPhoneClickable // * スマホ対応
+import androidx.compose.foundation.gestures.detectTapGestures // * スマホ対応
+import androidx.compose.ui.input.pointer.pointerInput // * スマホ対応
 
 @Composable
 fun VideoTopSubMenuUI(
@@ -289,10 +292,22 @@ fun VideoMenuTileItem(
             focusedContentColor = if (colors.isDark) Color.Black else Color.White
         ),
         shape = ClickableSurfaceDefaults.shape(shape = RoundedCornerShape(12.dp)),
+        // ★ スマホ対応: このタイル（VideoMenuTileItem）は androidx.tv.material3.Surface
+        // で、D-pad操作（フォーカス＋OK/Enter）専用の実装のためタップに反応
+        // しなかった。ビデオプレイヤーの設定サブメニューの全タイル（画質・字幕・
+        // 音声等）がこれを使っているため、ここ1箇所への追加でサブメニュー全体が
+        // タップ操作可能になる。
+        // TVへの影響なし: common/TvPhoneClickable.kt の onPreviewKeyEvent が
+        // DirectionCenter/Enter の KeyUp をプレビュー（先取り）フェーズで消費する
+        // ため、Surfaceネイティブの本体（バブル）フェーズの処理には伝播しない。
+        // 呼び出し経路が変わるだけでonClickの発火回数（1回）は変わらない。
+        // タップ用のpointerInput部分もタッチスクリーンの無いTVでは物理的に
+        // 発火しない。
         modifier = modifier
             .size(width, height)
             // ★ 追加: 非対応項目は半透明にしてグレーアウトを強調
             .alpha(if (enabled) 1f else 0.4f)
+            .tvPhoneClickable { if (enabled) onClick() }
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -398,6 +413,26 @@ fun AnimatedVisibilityScope.ModernVideoSettingsOverlay(
             },
         contentAlignment = Alignment.CenterEnd
     ) {
+        // ★ スマホ対応: メニュー外（暗い余白部分）をタップしたら閉じられる
+        // ようにする透明タップ検知Box。TVはこの操作手段（タップでの閉じる）
+        // 自体を持たないため、元々TV向けには無かった機能。
+        // TVへの影響なし: 当初 Modifier.clickable() で実装していたが、これは
+        // 内部で focusable() も付与してしまい、全画面サイズのこのBoxがTVの
+        // D-padフォーカス順序に巨大な余分の停止点として入り込んでしまう問題が
+        // あったため、pointerInput + detectTapGestures に変更した。この
+        // 組み合わせはポインター（タッチ）入力だけを消費し、フォーカス
+        // システムには一切関与しないため、TVのキー操作/フォーカス移動には
+        // 影響しない。
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = {
+                        if (selectedCategory != null) selectedCategory = null
+                        else onClose()
+                    })
+                }
+        )
         Column(
             modifier = Modifier
                 .animateEnterExit(
@@ -549,6 +584,13 @@ fun ModernSettingRow(
             // ★ 追加: 非対応項目は半透明にしてグレーアウトを強調
             .alpha(if (enabled) 1f else 0.4f)
             .onFocusChanged { isFocused = it.isFocused }
+            // ★ スマホ対応（上の VideoMenuTileItem と同じ理由）: この設定行
+            // （ModernSettingRow）も androidx.tv.material3.Surface で
+            // D-pad操作専用のためタップに反応しなかった。字幕/音声/レイヤー設定
+            // 等のリスト行がこれを使っている。
+            // TVへの影響なし: 上と同じくonPreviewKeyEventのプレビュー消費により
+            // Surfaceネイティブの処理と置き換わるだけで、発火回数は変わらない。
+            .tvPhoneClickable { if (enabled) onClick() }
     ) {
         Row(
             modifier = Modifier

@@ -57,6 +57,10 @@ import kotlinx.coroutines.delay
 import java.util.Locale
 import kotlin.math.floor
 import kotlin.math.pow
+import com.beeregg2001.komorebi.common.tvPhoneClickable // * スマホ対応
+import androidx.compose.foundation.gestures.awaitEachGesture // * スマホ対応
+import androidx.compose.foundation.gestures.awaitFirstDown // * スマホ対応
+import androidx.compose.ui.input.pointer.pointerInput // * スマホ対応
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
@@ -313,6 +317,33 @@ fun PlayerControls(
                                 right = FocusRequester.Cancel
                             }
                             .focusable(isModernUi)
+                            // ★ スマホ対応: シークバーをドラッグ/タップして直接シーク
+                            // できるようにする。タップした位置、およびその後のドラッグ
+                            // 位置を継続的に読み取り、対応する再生位置へシークする。
+                            // TVへの影響なし: pointerInput + awaitFirstDown/
+                            // awaitPointerEvent はポインター（タッチ）入力のみを検知する
+                            // 仕組みで、フォーカスシステムにもD-padのキーイベントにも
+                            // 一切関与しない。タッチスクリーンを持たないTVでは、この
+                            // ブロック自体が物理的に発火しない。すぐ下のシークバー
+                            // 左右キーによるシーク（.onKeyEvent）は元々のTV機能で、
+                            // ここでは変更していない。
+                            .pointerInput(totalDurationMs) {
+                                awaitEachGesture {
+                                    val down = awaitFirstDown()
+                                    val width = size.width.toFloat()
+                                    val fraction = (down.position.x / width).coerceIn(0f, 1f)
+                                    onSeekRequested((fraction * totalDurationMs).toLong())
+                                    do {
+                                        val event = awaitPointerEvent()
+                                        val drag = event.changes.firstOrNull() ?: break
+                                        if (drag.pressed) {
+                                            val f = (drag.position.x / width).coerceIn(0f, 1f)
+                                            onSeekRequested((f * totalDurationMs).toLong())
+                                            drag.consume()
+                                        }
+                                    } while (event.changes.any { it.pressed })
+                                }
+                            }
                             // ★ シークバーでのシークができない問題の修正
                             // フォーカスが当たっている間に左右キーが押された際、onSeekRequested へ新しい時間を渡してシークさせる
                             .onKeyEvent { event ->
@@ -618,6 +649,27 @@ fun OsdIconButton(
                 }
                 false
             }
+            // ★ スマホ対応: OsdIconButton は androidx.tv.material3.Surface で、
+            // D-pad操作専用の実装のためタップに反応しなかった。再生/一時停止・
+            // 早送り・音量等、OSDの各種操作ボタンがこれを使っている。
+            // TVへの影響なし: 上の連打用 onPreviewKeyEvent は「KeyDownかつ
+            // repeatCount>0（＝押しっぱなし中）」の場合だけを消費し、通常の
+            // 単発押し（repeatCount=0のKeyDownや、押した後のKeyUp）はここでは
+            // 消費せず素通りさせる（returnせず末尾のfalseに落ちる）。
+            // tvPhoneClickableのonPreviewKeyEventは、この後（チェーン内で
+            // より内側）に付いており、DirectionCenter/EnterのKeyUpで初めて
+            // onClickを呼ぶ。つまり：
+            // ・押しっぱなし中の連打KeyDownは上のハンドラだけで完結して消費され、
+            // 　tvPhoneClickable側には届かない（二重発火なし）。
+            // ・通常の単発押しでは、KeyDownは上のハンドラを素通りしtvPhoneClickable
+            // 　側で「消費はするがonClickは呼ばない」、続くKeyUpで初めてonClickが
+            // 　1回だけ呼ばれる（これは元々Surfaceネイティブの本体（バブル）
+            // 　フェーズがKeyUpで呼んでいたのと同じタイミング・同じ1回きりの
+            // 　呼び出しを、プレビュー側で肩代わりしているだけ）。
+            // 　結果として全体の呼び出し回数はTVで変化しない。
+            // タップ用のpointerInput部分もタッチスクリーンの無いTVでは物理的に
+            // 発火しない。
+            .tvPhoneClickable { onClick() }
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             Icon(icon, contentDescription = label, modifier = Modifier.size(iconSize))

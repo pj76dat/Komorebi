@@ -45,6 +45,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.UUID
+import androidx.compose.foundation.gestures.detectTapGestures // * スマホ対応
+import androidx.compose.ui.input.pointer.pointerInput // * スマホ対応
 
 private const val TAG = "VideoPlayerScreen"
 
@@ -66,6 +68,19 @@ fun VideoPlayerScreen(
     onShowToast: (String) -> Unit,
     isPiPMode: Boolean = false,
     onPiPRequested: () -> Unit = {},
+    // ★ スマホ対応: 画面の縦横比に応じて映像の表示方式（拡大/フィット）を
+    // 呼び出し元（Phone/TV）から指定できるようにする追加パラメータ。
+    // TVへの影響なし: デフォルト値の RESIZE_MODE_FILL は、この値を使う箇所
+    // （ratio >= 1.7f のとき）で元々ハードコードされていた値と同一。TV側の
+    // 呼び出しは resizeMode を指定しないため、常にこのデフォルト値が使われ、
+    // 既存のTVの表示結果と完全に一致する。
+    resizeMode: Int = AspectRatioFrameLayout.RESIZE_MODE_FILL,
+    // ★ スマホ対応: 画面タップでOSD（再生操作UI）の表示・非表示を切り替える
+    // ためのコールバック。スマホ用の呼び出し元からのみ渡される。
+    // TVへの影響なし: デフォルト値が null で、この値を使う箇所は全て
+    // `onTap != null` を条件に含めているため、TV（onTap未指定＝null）では
+    // 該当コードは実行されない。
+    onTap: (() -> Unit)? = null,
     videoPlayerViewModel: VideoPlayerViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -450,6 +465,30 @@ fun VideoPlayerScreen(
 
     BackHandler(enabled = isPiPMode) {}
 
+    // ★ スマホ対応: ビデオプレイヤーの設定サブメニュー・シーン検索・
+    // チャプター一覧・番組情報が開いている間、システムの「戻る」ジェスチャー/
+    // ボタンをここで受け止めて、開いている方を閉じるだけの動作にする。
+    // ライブプレイヤー側で見つかった「戻る操作がプレイヤーの外まで突き抜けて
+    // アプリが閉じてしまう」問題と同じ原因（ビデオプレイヤーには元々これらの
+    // 状態に対する戻る処理が無かった）のため、同じ対応をここにも入れている。
+    // TVへの影響なし: onTap != null（＝スマホ）の時だけ有効にする。TVは
+    // D-padの戻るキーで各オーバーレイ内のフォーカス移動・専用の閉じるボタン
+    // 操作を行うため、この BackHandler 自体が無くても問題にならない
+    // （onTap が常に null のTVでは条件が常にfalseになりこのハンドラは
+    // 発火しない）。
+    BackHandler(
+        enabled = onTap != null &&
+            (isSubMenuOpen || isModernSettingsOpen || isSceneSearchOpen || isChapterListOpen || isProgramInfoOpen)
+    ) {
+        when {
+            isModernSettingsOpen -> isModernSettingsOpen = false
+            isSubMenuOpen -> onSubMenuToggle(false)
+            isSceneSearchOpen -> onSceneSearchToggle(false)
+            isChapterListOpen -> isChapterListOpen = false
+            isProgramInfoOpen -> isProgramInfoOpen = false
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -500,8 +539,14 @@ fun VideoPlayerScreen(
                     val ratio =
                         (videoWidth.toFloat() * pixelWidthHeightRatio) / videoHeight.toFloat()
                     view.setAspectRatio(ratio)
+                    // ★ スマホ対応: 元は RESIZE_MODE_FILL 固定だった箇所を resizeMode
+                    // パラメータに置き換え、Phone側からFIT/FILLを選べるようにした。
+                    // TVへの影響なし: resizeMode のデフォルト値は RESIZE_MODE_FILL
+                    // で、これは元のハードコード値と同一。TV側の呼び出しは
+                    // resizeMode を指定しないため、常にこのデフォルト値が使われ、
+                    // 元のTVの表示結果と完全に一致する。
                     val targetMode =
-                        if (ratio >= 1.7f) AspectRatioFrameLayout.RESIZE_MODE_FILL else AspectRatioFrameLayout.RESIZE_MODE_FIT
+                        if (ratio >= 1.7f) resizeMode else AspectRatioFrameLayout.RESIZE_MODE_FIT
                     if (view.resizeMode != targetMode) view.resizeMode = targetMode
                 }
             },
@@ -528,6 +573,23 @@ fun VideoPlayerScreen(
         )
 
         if (!isPiPMode) {
+            // ★ スマホ対応: AndroidView(update{}) 内で毎回計算している実効
+            // resizeMode を、字幕WebViewのレターボックス補正でも使うために
+            // Compose 側の値としても保持しておく（詳細は下の
+            // AspectFitOverlayBox 呼び出し箇所のコメント参照）。
+            val subtitleVideoAspect = remember(videoWidth, videoHeight, pixelWidthHeightRatio) {
+                if (videoWidth > 0 && videoHeight > 0) {
+                    (videoWidth.toFloat() * pixelWidthHeightRatio) / videoHeight.toFloat()
+                } else 0f
+            }
+            val effectiveIsFillMode = remember(subtitleVideoAspect, resizeMode) {
+                if (subtitleVideoAspect > 0f) {
+                    (if (subtitleVideoAspect >= 1.7f) resizeMode else AspectRatioFrameLayout.RESIZE_MODE_FIT) ==
+                        AspectRatioFrameLayout.RESIZE_MODE_FILL
+                } else {
+                    resizeMode == AspectRatioFrameLayout.RESIZE_MODE_FILL
+                }
+            }
             val commentLayer = @Composable {
                 if (isHeavyUiReady && vs.isCommentEnabled) {
                     ArchivedCommentOverlay(
@@ -539,28 +601,44 @@ fun VideoPlayerScreen(
             }
             val subtitleLayer = @Composable {
                 if (isHeavyUiReady) {
-                    AndroidView(
-                        factory = { ctx ->
-                            WebView(ctx).apply {
-                                layoutParams = ViewGroup.LayoutParams(-1, -1)
-                                setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                                settings.apply {
-                                    javaScriptEnabled = true; domStorageEnabled = true
-                                }
-                                loadUrl("file:///android_asset/subtitle_renderer.html")
-                                webViewRef.value = this
-                            }
-                        },
-                        update = { view ->
-                            val targetAlpha =
-                                if (vs.isSubtitleEnabled && !isSubOverlayOpen) 1f else 0f
-                            if (view.alpha != targetAlpha) {
-                                view.alpha = targetAlpha
-                            }
-                        },
-                        onRelease = { view -> view.destroy(); webViewRef.value = null },
+                    // ★ スマホ対応: 字幕WebViewを、レターボックスを除いた実際の
+                    // 映像の矩形に合わせる。字幕描画ライブラリ(aribb24.js)は
+                    // コンテナ全体＝映像そのものとして座標系を引き伸ばすため、
+                    // スマホでレターボックス（FIT時の黒帯）が出ると字幕の位置が
+                    // 中央寄り・右端切れになっていた問題への対応。
+                    com.beeregg2001.komorebi.common.AspectFitOverlayBox(
+                        videoAspect = subtitleVideoAspect,
+                        // TVへの影響なし: crop に onTap == null を or 条件で
+                        // 加えているため、TV（onTap常にnull）では resizeMode の
+                        // 計算結果に関わらず常に true（＝元通りの fillMaxSize）に
+                        // 固定される。4:3等の狭い比率コンテンツでもTVの挙動は
+                        // 一切変えない。
+                        crop = effectiveIsFillMode || onTap == null,
                         modifier = Modifier.fillMaxSize()
-                    )
+                    ) {
+                        AndroidView(
+                            factory = { ctx ->
+                                WebView(ctx).apply {
+                                    layoutParams = ViewGroup.LayoutParams(-1, -1)
+                                    setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                                    settings.apply {
+                                        javaScriptEnabled = true; domStorageEnabled = true
+                                    }
+                                    loadUrl("file:///android_asset/subtitle_renderer.html")
+                                    webViewRef.value = this
+                                }
+                            },
+                            update = { view ->
+                                val targetAlpha =
+                                    if (vs.isSubtitleEnabled && !isSubOverlayOpen) 1f else 0f
+                                if (view.alpha != targetAlpha) {
+                                    view.alpha = targetAlpha
+                                }
+                            },
+                            onRelease = { view -> view.destroy(); webViewRef.value = null },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
             }
 
@@ -832,6 +910,20 @@ fun VideoPlayerScreen(
 
             if (!isModern) {
                 PlaybackIndicator(vs.indicatorState)
+            }
+
+            // ★ スマホ対応: 画面タップでOSD（再生操作UI）の表示・非表示を
+            // トグルできるようにする透明タップ検知Box。
+            // TVへの影響なし: onTap != null（＝スマホ）の時だけ生成される
+            // Boxで、TV（onTap常にnull）ではこのBox自体が存在しない。
+            if (onTap != null && !showControls && !isSubOverlayOpen) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            detectTapGestures(onTap = { onTap() })
+                        }
+                )
             }
         }
     }

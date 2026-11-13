@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.*
+import com.beeregg2001.komorebi.common.tvPhoneClickable // * スマホ対応
 import com.beeregg2001.komorebi.data.model.RecordedProgram
 import com.beeregg2001.komorebi.common.safeRequestFocus
 import kotlinx.coroutines.Dispatchers
@@ -403,10 +404,20 @@ fun TiledThumbnailItem(
             focusedContainerColor = Color.White,
             focusedContentColor = Color.Black
         ),
+        // ★ スマホ対応: この TiledThumbnailItem は androidx.tv.material3.Surface
+        // で、D-pad操作専用の実装のためタップに反応しなかった。シーン検索の
+        // サムネイルスクラブ帯とチャプター一覧の両方がこの1つのコンポーザブルを
+        // 使っているため、ここ1箇所への追加で両方タップ操作可能になる。
+        // TVへの影響なし: onPreviewKeyEvent によるDirectionCenter/EnterのKeyUp
+        // 消費がSurfaceネイティブの本体（バブル）フェーズより先に走るため、
+        // 呼び出し経路が変わるだけでonClickの発火回数（1回）は変わらない。
+        // タップ用のpointerInput部分もタッチスクリーンの無いTVでは物理的に
+        // 発火しない。
         modifier = modifier
             .width(224.dp)
             .height(126.dp)
             .onFocusChanged { if (it.isFocused) onFocused() }
+            .tvPhoneClickable(onClick)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             if (bitmap != null) {

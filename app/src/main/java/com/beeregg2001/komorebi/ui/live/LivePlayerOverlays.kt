@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.tv.material3.*
 import coil.compose.AsyncImage
 import com.beeregg2001.komorebi.common.AppStrings
+import com.beeregg2001.komorebi.common.tvPhoneClickable // * スマホ対応
 import com.beeregg2001.komorebi.data.model.Channel
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
 import kotlinx.coroutines.delay
@@ -393,6 +394,21 @@ fun LiveErrorDialog(errorMessage: String, onRetry: () -> Unit, onBack: () -> Uni
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(32.dp))
+                // ★ スマホ対応: この「戻る/再読み込み」ボタンは androidx.tv.material3.Button
+                // で、D-pad操作（フォーカス＋OK/Enter）専用の実装になっており、タップ
+                // だけでは反応しなかった（再生エラー時にスマホでは何も操作できず
+                // アプリを閉じるしかなかった）。common/TvPhoneClickable.kt の
+                // .tvPhoneClickable(onClick) を追加してタップでも押せるようにした。
+                // TVへの影響なし: tvPhoneClickable は onPreviewKeyEvent で
+                // DirectionCenter/Enter の KeyUp を検知して onClick を呼ぶが、
+                // Composeのキーイベントは「プレビュー(先取り)」フェーズが
+                // 「本体（バブル）」フェーズより先に走り、消費されると本体側には
+                // 伝播しない。そのため元々ButtonネイティブがOK/Enterで発火させて
+                // いたonClickの呼び出しが、tvPhoneClickable側の呼び出しに置き換わる
+                // だけで、呼び出し回数（1回）は変わらない。タップ用の
+                // pointerInput/detectTapGestures 部分はポインター入力しか
+                // 検知しないため、タッチスクリーンを持たないTVでは物理的に
+                // 発火しない。
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -403,7 +419,9 @@ fun LiveErrorDialog(errorMessage: String, onRetry: () -> Unit, onBack: () -> Uni
                             containerColor = Color.White.copy(alpha = 0.1f),
                             contentColor = Color.White
                         ),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .tvPhoneClickable(onBack)
                     ) {
                         Text(AppStrings.BUTTON_BACK)
                     }
@@ -416,6 +434,7 @@ fun LiveErrorDialog(errorMessage: String, onRetry: () -> Unit, onBack: () -> Uni
                         modifier = Modifier
                             .weight(1f)
                             .focusRequester(retryButtonFocusRequester)
+                            .tvPhoneClickable(onRetry)
                     ) {
                         Text(AppStrings.BUTTON_RETRY)
                     }
@@ -547,11 +566,21 @@ fun LCropOverlay(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1.2f)) {
+                        // ★ スマホ対応: L字クロップ調整メニューの各ボタンは
+                        // androidx.tv.material3.Button で、D-pad操作専用のため
+                        // タップに反応しなかった。.tvPhoneClickable(...) を追加して
+                        // タップでも操作できるようにした（メカニズムは上の
+                        // LiveErrorDialog の戻る/再読み込みボタンと同じ — 詳細は
+                        // そちらのコメント参照）。
+                        // TVへの影響なし: onPreviewKeyEvent によるOK/Enterの消費が
+                        // Buttonネイティブの処理より先に走るため、呼び出し経路が
+                        // 変わるだけでonClickの発火回数は変わらない。
                         Button(
                             onClick = { state.lCropMode = LCropMode.DIRECT_ADJUST },
                             modifier = Modifier
                                 .fillMaxWidth(0.9f)
-                                .focusRequester(menuFocusRequester),
+                                .focusRequester(menuFocusRequester)
+                                .tvPhoneClickable { state.lCropMode = LCropMode.DIRECT_ADJUST },
                             colors = ButtonDefaults.colors(
                                 containerColor = colors.accent,
                                 contentColor = focusedContentColor,
@@ -566,7 +595,9 @@ fun LCropOverlay(
 
                         Button(
                             onClick = onClose,
-                            modifier = Modifier.fillMaxWidth(0.9f),
+                            modifier = Modifier
+                                .fillMaxWidth(0.9f)
+                                .tvPhoneClickable(onClose),  // ★ スマホ対応（上と同じ理由）
                             colors = ButtonDefaults.colors(
                                 containerColor = colors.textPrimary.copy(alpha = 0.1f),
                                 contentColor = colors.textPrimary,
@@ -633,6 +664,15 @@ fun LCropOverlay(
                                         ZoomOrigin.BottomLeft -> ZoomOrigin.TopLeft
                                     }
                                 },
+                            // ★ スマホ対応（上と同じ理由）: 拡大起点コーナー切替ボタン
+                                modifier = Modifier.tvPhoneClickable {
+                                    state.lCropOrigin = when (state.lCropOrigin) {
+                                        ZoomOrigin.TopLeft -> ZoomOrigin.TopRight
+                                        ZoomOrigin.TopRight -> ZoomOrigin.BottomRight
+                                        ZoomOrigin.BottomRight -> ZoomOrigin.BottomLeft
+                                        ZoomOrigin.BottomLeft -> ZoomOrigin.TopLeft
+                                    }
+                                },
                                 colors = ButtonDefaults.colors(
                                     containerColor = colors.textPrimary.copy(alpha = 0.1f),
                                     contentColor = colors.textPrimary,
@@ -678,7 +718,10 @@ private fun AdjustmentButton(
             focusedContainerColor = colors.textPrimary,
             focusedContentColor = focusedContentColor
         ),
-        modifier = Modifier.size(36.dp)
+        // ★ スマホ対応（上と同じ理由）: ±ズーム調整の丸型ボタン
+        modifier = Modifier
+            .size(36.dp)
+            .tvPhoneClickable(onClick)
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             Icon(icon, null, modifier = Modifier.size(24.dp))

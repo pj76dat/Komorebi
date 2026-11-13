@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.KeyEvent as NativeKeyEvent
 import android.view.ViewGroup
 import android.webkit.*
+import androidx.activity.compose.BackHandler // * スマホ対応
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.*
@@ -18,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.focus.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
@@ -52,6 +54,8 @@ import java.util.Collections
 import android.graphics.Color as AndroidColor
 import master.flame.danmaku.controller.IDanmakuView
 import master.flame.danmaku.danmaku.model.BaseDanmaku
+import androidx.compose.foundation.gestures.detectTapGestures // * スマホ対応
+import androidx.compose.ui.input.pointer.pointerInput // * スマホ対応
 
 private const val TAG = "LivePlayerScreen"
 
@@ -80,7 +84,20 @@ fun LivePlayerScreen(
     reserveViewModel: ReserveViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel(),
     livePlayerViewModel: LivePlayerViewModel = hiltViewModel(),
-    timeFormat: String = "24H"
+    timeFormat: String = "24H",
+    // ★ スマホ対応: 画面の縦横比に応じて映像の表示方式（拡大/フィット）を
+    // 呼び出し元（Phone/TV）から指定できるようにする追加パラメータ。
+    // TVへの影響なし: デフォルト値の RESIZE_MODE_FILL は、この値を使う箇所の
+    // 分岐（isAnamorphic || ratio >= 1.7f のとき）で元々ハードコードされていた
+    // 値と同一。TV側の呼び出しは resizeMode を指定しないため、常にこの
+    // デフォルト値が使われ、既存のTVの表示結果と完全に一致する。
+    resizeMode: Int = AspectRatioFrameLayout.RESIZE_MODE_FILL,
+    // ★ スマホ対応: 画面タップでOSD（番組情報/操作UI）の表示・非表示を
+    // 切り替えるためのコールバック。スマホ用の呼び出し元からのみ渡される。
+    // TVへの影響なし: デフォルト値が null で、この値を使う箇所は全て
+    // `onTap != null` を条件に含めているため、TV（onTap未指定＝null）では
+    // 該当コードは実行されない。
+    onTap: (() -> Unit)? = null
 ) {
     val uiContext = LocalContext.current
     val colors = KomorebiTheme.colors
@@ -468,6 +485,17 @@ fun LivePlayerScreen(
         onManualOverlayChange(false); onPinnedOverlayChange(false); onShowOverlayChange(true); scrollState.scrollTo(
         0
     )
+        // ★ スマホ対応: 番組概要オーバーレイの表示時間カウントを、映像の
+        // バッファリングが終わるまで開始しない。回線が遅い環境（主にスマホ）では
+        // バッファリング中に4.5秒のカウントが進んでしまい、実際に映像が映る頃には
+        // 概要がすでに消えている、という問題があったため。
+        // TVへの影響なし: onTap != null（＝スマホ）の時だけ待機ループを実行する。
+        // TVは常に元通り即座に delay(4500) から始まる。「TVでもバッファリングは
+        // ほぼ瞬時だから実質変わらないはず」という推測に頼らず、確実に元の挙動の
+        // ままにしている。
+        if (onTap != null) {
+            while (isMainBuffering) delay(200)
+        }
         delay(4500)
         if (!currentIsManualOverlay && !currentIsPinnedOverlay && !currentIsSubMenuOpen) onShowOverlayChange(
             false
@@ -480,6 +508,49 @@ fun LivePlayerScreen(
 
     val isUiVisible =
         isSubMenuOpen || isMiniListOpen || showOverlay || isPinnedOverlay || ps.lCropMode != LCropMode.HIDDEN
+
+    // ★ スマホ対応: 設定サブメニュー（歯車アイコン）・チャンネルリスト・
+    // L字クロップ調整画面・二画面モードのいずれかが開いている間、システムの
+    // 「戻る」ジェスチャー/ボタンをここで受け止めて、開いている方を閉じる
+    // （二画面モードの場合は二画面自体を終了する）だけの動作にする。これが
+    // 無いと、TVには存在しない「戻る」操作（スマホの左端スワイプ等）がそのまま
+    // プレイヤーの外まで突き抜けてしまい、オーバーレイを閉じる手段が無いまま
+    // アプリそのものが閉じてしまうことがあった。
+    // 二画面モードは特に優先度を最も高くしている。TVの ps.handleKeyEvent も
+    // 同じ順序（二画面中はBACK/ESCAPEを他の何より先に、二画面終了専用として
+    // 消費する）になっているため、それに合わせている。
+    // TVへの影響なし: onTap != null（＝スマホ）の時だけ有効にする。TVでは
+    // 二画面モード中のBACK/ESCAPEは ps.handleKeyEvent 自身が既に消費・処理
+    // している（このBackHandlerが有効になる onTap != null はTVでは常にfalse
+    // なので、そもそも競合しない）。二画面以外（isSubMenuOpen/isMiniListOpen）
+    // 中は ps.handleKeyEvent が意図的に未消費のまま返し、フォーカスがタブ行に
+    // ある状態で２回目の戻るキーが押されるとプレイヤーの外まで伝播する（＝
+    // プレイヤーを閉じる）という既存の挙動になっている。ここを無条件で有効に
+    // すると、その伝播をこの BackHandler が横取りしてしまい、TVでの「戻るを
+    // 連打すると最終的にプレイヤーごと閉じる」という既存動作を変えてしまう
+    // ため、onTap != null のガードで確実にTVには影響しないようにしている。
+    // L字クロップ画面には ps.handleKeyEvent 側の早期returnによる仕組みが
+    // 元々無いが、同じ理由で onTap != null のガードのみで安全にしている。
+    BackHandler(
+        enabled = onTap != null &&
+            (ps.isDualDisplayMode || isSubMenuOpen || isMiniListOpen || ps.lCropMode != LCropMode.HIDDEN)
+    ) {
+        when {
+            ps.isDualDisplayMode -> {
+                // TVの長押し終了時の後処理（ps.handleKeyEvent 内）と同一の内容。
+                ps.isDualDisplayMode = false
+                ps.leftScreenWeight = 1f
+                ps.rightScreenWeight = 1f
+                ps.previousStreamSource?.let {
+                    ps.currentStreamSource = it
+                    ps.previousStreamSource = null
+                }
+            }
+            isSubMenuOpen -> onSubMenuToggle(false)
+            isMiniListOpen -> onMiniListToggle(false)
+            ps.lCropMode != LCropMode.HIDDEN -> ps.lCropMode = LCropMode.HIDDEN
+        }
+    }
 
     LaunchedEffect(isUiVisible) {
         channelViewModel.setPollingPaused(!isUiVisible)
@@ -549,11 +620,36 @@ fun LivePlayerScreen(
                 isSubtitleEnabled = isSubtitleEnabled
             )
         } else {
+            // ★ スマホ対応: PlayerView の update{} 内で毎回計算している実効
+            // resizeMode を、字幕WebViewのレターボックス補正でも使うために
+            // Compose 側の値としても保持しておく（詳細は下の AspectFitOverlayBox
+            // 呼び出し箇所のコメント参照）。
+            val effectiveIsFillMode = remember(videoWidth, videoHeight, pixelWidthHeightRatio, resizeMode) {
+                if (videoWidth > 0 && videoHeight > 0) {
+                    val ratio = videoWidth.toFloat() / videoHeight.toFloat()
+                    val isAnamorphic =
+                        (videoWidth == 1440 && videoHeight == 1080 && pixelWidthHeightRatio == 1.0f)
+                    val targetMode =
+                        if (isAnamorphic || ratio >= 1.7f) resizeMode else AspectRatioFrameLayout.RESIZE_MODE_FIT
+                    targetMode == AspectRatioFrameLayout.RESIZE_MODE_FILL
+                } else {
+                    resizeMode == AspectRatioFrameLayout.RESIZE_MODE_FILL
+                }
+            }
+            val subtitleVideoAspect = remember(videoWidth, videoHeight) {
+                if (videoWidth > 0 && videoHeight > 0) videoWidth.toFloat() / videoHeight.toFloat() else 0f
+            }
             AndroidView(
                 factory = {
                     PlayerView(it).apply {
                         player = mainPlayer
-                        useController = false; keepScreenOn = true; resizeMode =
+                        // ★ スマホ対応: 新しく追加した resizeMode パラメータと
+                        // ローカル変数名が衝突するため this.resizeMode に
+                        // 変更（値の代入先はTVと同じ PlayerView.resizeMode
+                        // プロパティで、代入している値も元のまま
+                        // RESIZE_MODE_FIT の固定値なので、この行自体は
+                        // 名前の書き方が変わっただけで挙動に変化なし）。
+                        useController = false; keepScreenOn = true; this.resizeMode =
                         AspectRatioFrameLayout.RESIZE_MODE_FIT
                     }
                 },
@@ -564,8 +660,16 @@ fun LivePlayerScreen(
                         val ratio = videoWidth.toFloat() / videoHeight.toFloat()
                         val isAnamorphic =
                             (videoWidth == 1440 && videoHeight == 1080 && pixelWidthHeightRatio == 1.0f)
+                        // ★ スマホ対応: 元は RESIZE_MODE_FILL 固定だった箇所を
+                        // resizeMode パラメータに置き換え、Phone側からFIT/FILLを
+                        // 選べるようにした。
+                        // TVへの影響なし: resizeMode のデフォルト値は
+                        // RESIZE_MODE_FILL で、これは元のハードコード値と同一。
+                        // TV側の呼び出しは resizeMode を指定しないため、常に
+                        // このデフォルト値が使われ、元のTVの表示結果と完全に
+                        // 一致する。
                         val targetMode =
-                            if (isAnamorphic || ratio >= 1.7f) AspectRatioFrameLayout.RESIZE_MODE_FILL else AspectRatioFrameLayout.RESIZE_MODE_FIT
+                            if (isAnamorphic || ratio >= 1.7f) resizeMode else AspectRatioFrameLayout.RESIZE_MODE_FIT
                         if (view.resizeMode != targetMode) view.resizeMode = targetMode
                     }
                 },
@@ -602,28 +706,44 @@ fun LivePlayerScreen(
 
             if (!isPiPMode) {
                 if (isHeavyUiReady) {
-                    AndroidView(
-                        factory = { ctx ->
-                            WebView(ctx).apply {
-                                layoutParams = ViewGroup.LayoutParams(-1, -1)
-                                setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                                settings.apply {
-                                    javaScriptEnabled = true; domStorageEnabled = true
-                                }
-                                loadUrl("file:///android_asset/subtitle_renderer.html")
-                                webViewRef.value = this
-                            }
-                        },
-                        update = { view ->
-                            view.visibility =
-                                if (isSubtitleEnabled && !isUiVisible) android.view.View.VISIBLE else android.view.View.INVISIBLE
-                        },
-                        onRelease = { view ->
-                            view.destroy()
-                            webViewRef.value = null
-                        },
+                    // ★ スマホ対応: 字幕WebViewを、レターボックスを除いた実際の
+                    // 映像の矩形に合わせる。字幕描画ライブラリ(aribb24.js)は
+                    // コンテナ全体＝映像そのものとして座標系を引き伸ばすため、
+                    // スマホでレターボックス（FIT時の黒帯）が出ると字幕の位置が
+                    // 中央寄り・右端切れになっていた問題への対応。
+                    com.beeregg2001.komorebi.common.AspectFitOverlayBox(
+                        videoAspect = subtitleVideoAspect,
+                        // TVへの影響なし: crop に onTap == null を or 条件で
+                        // 加えているため、TV（onTap常にnull）では resizeMode の
+                        // 計算結果に関わらず常に true（＝元通りの fillMaxSize）に
+                        // 固定される。4:3等の狭い比率コンテンツでもTVの挙動は
+                        // 一切変えない。
+                        crop = effectiveIsFillMode || onTap == null,
                         modifier = Modifier.fillMaxSize()
-                    )
+                    ) {
+                        AndroidView(
+                            factory = { ctx ->
+                                WebView(ctx).apply {
+                                    layoutParams = ViewGroup.LayoutParams(-1, -1)
+                                    setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                                    settings.apply {
+                                        javaScriptEnabled = true; domStorageEnabled = true
+                                    }
+                                    loadUrl("file:///android_asset/subtitle_renderer.html")
+                                    webViewRef.value = this
+                                }
+                            },
+                            update = { view ->
+                                view.visibility =
+                                    if (isSubtitleEnabled && !isUiVisible) android.view.View.VISIBLE else android.view.View.INVISIBLE
+                            },
+                            onRelease = { view ->
+                                view.destroy()
+                                webViewRef.value = null
+                            },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
 
                 if (isHeavyUiReady && isCommentEnabled) {
@@ -636,6 +756,73 @@ fun LivePlayerScreen(
                     ) { view -> danmakuViewRef.value = view; if (!ps.isPlayerPlaying) view.pause() }
                 }
             }
+        }
+
+        // ★ 修正: この透明タップ検知Boxは、元々 if(isDualDisplayMode){...} else
+        // {...} の else 節（単一チャンネル表示時のみ）の中に置かれていた。
+        // 二画面モードでは DualDisplayPlayer(...) 側のブロックが実行され、この
+        // Box自体が一切コンポーズされないため、条件変数(isSubMenuOpen等)の値に
+        // 関わらず、二画面モード中はタップが常に何にも渡らなかった（zIndexを
+        // 足しても、常時表示のはずのデバッグ表示すら出なかったのはこれが理由 —
+        // 存在しないBoxにzIndexを効かせることはできない）。if/elseの外、
+        // 兄弟要素として置くことで、単一チャンネル・二画面どちらの時も
+        // コンポーズされるようにした。
+        // ★ スマホ対応: 画面タップでOSD（番組情報/操作UI）の表示・非表示を
+        // トグルできるようにする透明タップ検知Box。表示中も隠せるように
+        // !isUiVisible 縛りを外している（isSubMenuOpen/isMiniListOpen/
+        // lCropMode はそれぞれ専用のタップ操作があるため引き続き除外）。
+        // 二画面モード中は、タップした側（左半分/右半分）を
+        // activeDualPlayerIndex に反映する処理も併せて行う。これはTVで
+        // D-pad の左右キーが担っている「音声を出す側の画面を選ぶ」操作の
+        // スマホでのタップ版。
+        // TVへの影響なし: onTap != null（＝スマホ）の時だけ生成される
+        // Boxで、TV（onTap常にnull）ではこのBox自体が存在しない。
+        if (onTap != null && !isPiPMode && !isSubMenuOpen && !isMiniListOpen && ps.lCropMode == LCropMode.HIDDEN) {
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .zIndex(100f)
+                .pointerInput(ps.isDualDisplayMode) {
+                    detectTapGestures(
+                        onTap = { offset ->
+                            if (ps.isDualDisplayMode) {
+                                ps.activeDualPlayerIndex = if (offset.x < size.width / 2) 0 else 1
+                                // ★ スマホ対応: TVでは D-pad の左右キーで画面（音声）を
+                                // 切り替えると、ps.handleKeyEvent 内で
+                                // lastInteractionTime も同時に更新され、それを
+                                // LiveDualPlayer.kt 側の LaunchedEffect(lastInteractionTime)
+                                // が検知して、両画面のチャンネル名・番組タイトルを一定時間
+                                // （5秒）表示してから消す、という仕組みになっている。
+                                // タップでのペイン切替はこのタイムスタンプを更新して
+                                // いなかったため、同じ情報表示がスマホでは出なかった。
+                                // TVへの影響なし: onTap != null（＝スマホ）の時だけ実行
+                                // される分岐内の追加行で、TV側の handleKeyEvent の処理・
+                                // タイミングには一切触れていない。
+                                ps.lastInteractionTime = System.currentTimeMillis()
+                            }
+                            onTap()
+                        },
+                        // ★ スマホ対応: TVではOKボタンで「選択中の画面のサイズを
+                        // 切替」（1:1 → 選択側が小さく → 選択側が大きく →
+                        // 1:1 に戻る、の3状態サイクル）ができるが、スマホには
+                        // OKボタンに相当する物理キーが無い。左右選択がシングル
+                        // タップに既に割り当たっているため、ここではダブル
+                        // タップをOKボタン相当として使う。ダブルタップした側を
+                        // 選択状態にした上で ps.toggleDualScreenSize() を呼び、
+                        // TVの実装をそのまま利用する（サイズの数値やサイクル
+                        // 順序はTVと完全に同一）。
+                        // TVへの影響なし: onTap != null（＝スマホ）の時だけ有効な
+                        // onDoubleTap。ps.toggleDualScreenSize() 自体はTV側の
+                        // 既存関数をそのまま呼んでいるだけで、その中身は一切
+                        // 変更していない。
+                        onDoubleTap = { offset ->
+                            if (ps.isDualDisplayMode) {
+                                ps.activeDualPlayerIndex = if (offset.x < size.width / 2) 0 else 1
+                                ps.toggleDualScreenSize()
+                                ps.lastInteractionTime = System.currentTimeMillis()
+                            }
+                        }
+                    )
+                })
         }
 
         androidx.compose.animation.AnimatedVisibility(
@@ -743,6 +930,19 @@ fun LivePlayerScreen(
             )
         }
 
+        // ★ スマホ対応: チャンネルリスト表示中、リスト本体より上（画面の
+        // 残りの部分）をタップしたら閉じられるようにする透明タップ検知Box。
+        // ChannelListOverlay自体より前（下のレイヤー）に置くことで、リスト
+        // 自体へのタップは奪わない。
+        // TVへの影響なし: onTap != null（＝スマホ）の時だけ生成される。TVは
+        // この操作手段（タップでの閉じる）自体を持たないため元々不要であり、
+        // onTap常にnullのTVではこのBox自体が存在しない。
+        if (onTap != null && !isPiPMode && isMiniListOpen) {
+            Box(modifier = Modifier.fillMaxSize().pointerInput(Unit) {
+                detectTapGestures(onTap = { onMiniListToggle(false) })
+            })
+        }
+
         androidx.compose.animation.AnimatedVisibility(
             visible = !isPiPMode && isMiniListOpen && ps.playerError == null,
             enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
@@ -811,6 +1011,23 @@ fun LivePlayerScreen(
                             }
                             ps.previousStreamSource = null
                         }
+                    }
+                    // ★ スマホ対応: 他の設定サブメニュー内の操作（画質選択・
+                    // L字クロップ等）はどれも操作後に onSubMenuToggle(false) を
+                    // 呼んでサブメニューを閉じているが、二画面切替ボタンだけ
+                    // それが抜けていた。スマホではこれが深刻な影響を及ぼす:
+                    // isSubMenuOpen が立ったままだと、スマホ対応で追加した画面
+                    // タップ検知用Box（設定歯車・チャンネルリストの表示切替や
+                    // 二画面のペイン選択を担う）が !isSubMenuOpen を表示条件に
+                    // 含めているため、二画面を有効にした瞬間からタップが一切
+                    // 効かなくなってしまっていた。
+                    // TVへの影響なし: 実機でのご確認により、TVでは二画面切替後も
+                    // サブメニューは戻るキーで正しく閉じることを確認済み（＝TV側に
+                    // 実害のあるバグは無かった）。そのため、この呼び出しは
+                    // onTap != null（＝スマホ）の時だけ行うようにし、TVの既存の
+                    // タイミング・挙動を一切変えないようにしている。
+                    if (onTap != null) {
+                        onSubMenuToggle(false)
                     }
                 },
                 onSwapScreens = {

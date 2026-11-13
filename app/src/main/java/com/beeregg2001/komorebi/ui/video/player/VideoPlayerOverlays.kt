@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.*
+import com.beeregg2001.komorebi.common.tvPhoneClickable // * スマホ対応
 import com.beeregg2001.komorebi.data.model.RecordedProgram
 import com.beeregg2001.komorebi.ui.theme.KomorebiTheme
 import kotlinx.coroutines.delay
@@ -221,11 +222,25 @@ fun VideoLCropOverlay(
                 ) {
                     // --- 左側：操作ボタン ---
                     Column(modifier = Modifier.weight(1.2f)) {
+                        // ★ スマホ対応: L字クロップ調整メニューの各ボタンは
+                        // androidx.tv.material3.Button で、D-pad操作（フォーカス＋
+                        // OK/Enter）専用の実装になっており、タップだけでは
+                        // 反応しなかった。common/TvPhoneClickable.kt の
+                        // .tvPhoneClickable(...) を追加してタップでも操作できる
+                        // ようにした（ライブプレイヤー側のL字クロップと同じ対応）。
+                        // TVへの影響なし: tvPhoneClickable は onPreviewKeyEvent で
+                        // DirectionCenter/Enter の KeyUp をプレビュー（先取り）
+                        // フェーズで消費するため、Buttonネイティブの本体（バブル）
+                        // フェーズの処理には伝播しない。呼び出し経路が変わるだけで
+                        // onClickの発火回数（1回）は変わらない。タップ用の
+                        // pointerInput部分もタッチスクリーンの無いTVでは物理的に
+                        // 発火しない。
                         Button(
                             onClick = { state.lCropMode = LCropMode.DIRECT_ADJUST },
                             modifier = Modifier
                                 .fillMaxWidth(0.9f)
-                                .focusRequester(menuFocusRequester),
+                                .focusRequester(menuFocusRequester)
+                                .tvPhoneClickable { state.lCropMode = LCropMode.DIRECT_ADJUST },
                             colors = ButtonDefaults.colors(
                                 containerColor = colors.accent,
                                 contentColor = focusedContentColor,
@@ -240,7 +255,9 @@ fun VideoLCropOverlay(
 
                         Button(
                             onClick = onClose,
-                            modifier = Modifier.fillMaxWidth(0.9f),
+                            modifier = Modifier
+                                .fillMaxWidth(0.9f)
+                                .tvPhoneClickable(onClose),  // ★ スマホ対応（上と同じ理由）
                             colors = ButtonDefaults.colors(
                                 containerColor = colors.textPrimary.copy(alpha = 0.1f),
                                 contentColor = colors.textPrimary,
@@ -310,6 +327,15 @@ fun VideoLCropOverlay(
                                         ZoomOrigin.BottomLeft -> ZoomOrigin.TopLeft
                                     }
                                 },
+                                // ★ スマホ対応（上と同じ理由）: 拡大起点コーナー切替ボタン
+                                modifier = Modifier.tvPhoneClickable {
+                                    state.lCropOrigin = when (state.lCropOrigin) {
+                                        ZoomOrigin.TopLeft -> ZoomOrigin.TopRight
+                                        ZoomOrigin.TopRight -> ZoomOrigin.BottomRight
+                                        ZoomOrigin.BottomRight -> ZoomOrigin.BottomLeft
+                                        ZoomOrigin.BottomLeft -> ZoomOrigin.TopLeft
+                                    }
+                                },
                                 colors = ButtonDefaults.colors(
                                     containerColor = colors.textPrimary.copy(alpha = 0.1f),
                                     contentColor = colors.textPrimary,
@@ -349,7 +375,10 @@ private fun VideoAdjustmentButton(
             focusedContainerColor = colors.textPrimary,
             focusedContentColor = focusedContentColor
         ),
-        modifier = Modifier.size(36.dp)
+        // ★ スマホ対応（上と同じ理由）: ±ズーム調整の丸型ボタン
+        modifier = Modifier
+            .size(36.dp)
+            .tvPhoneClickable(onClick)
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             Icon(icon, null, modifier = Modifier.size(24.dp))

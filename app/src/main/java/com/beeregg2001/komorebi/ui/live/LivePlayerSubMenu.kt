@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.*
 import com.beeregg2001.komorebi.common.AppStrings
+import com.beeregg2001.komorebi.common.tvPhoneClickable // * スマホ対応
 import com.beeregg2001.komorebi.data.model.AudioMode
 import kotlinx.coroutines.delay
 import com.beeregg2001.komorebi.data.model.StreamQuality
@@ -473,9 +474,21 @@ fun LiveMenuTileItem(
             focusedContentColor = if (colors.isDark) Color.Black else Color.White
         ),
         shape = ClickableSurfaceDefaults.shape(shape = RoundedCornerShape(12.dp)),
+        // ★ スマホ対応: このタイルは androidx.tv.material3.Surface で、D-pad操作
+        // （フォーカス＋OK/Enter）専用の実装のためタップに反応しなかった。
+        // ライブプレイヤーの設定サブメニューの全タイル（画質・字幕・音声・録画等）
+        // がこの LiveMenuTileItem を使っているため、ここ1箇所への追加で
+        // サブメニュー全体がタップ操作可能になる。
+        // TVへの影響なし: common/TvPhoneClickable.kt の onPreviewKeyEvent が
+        // DirectionCenter/Enter の KeyUp をプレビュー（先取り）フェーズで消費する
+        // ため、Surfaceネイティブの本体（バブル）フェーズの処理には伝播しない。
+        // つまり呼び出し経路が変わるだけでonClickの発火回数（1回）は変わらない。
+        // タップ用のpointerInput部分はタッチスクリーンの無いTVでは物理的に
+        // 発火しない。
         modifier = modifier
             .size(width, height)
             .alpha(if (enabled) 1f else 0.5f)
+            .tvPhoneClickable { if (enabled) onClick() }
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),

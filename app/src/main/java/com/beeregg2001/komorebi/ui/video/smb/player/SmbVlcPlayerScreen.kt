@@ -5,12 +5,15 @@ package com.beeregg2001.komorebi.ui.video.smb.player
 import android.net.Uri
 import android.os.Build
 import android.util.Log
+import androidx.activity.compose.BackHandler // * スマホ対応
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.gestures.detectTapGestures // * スマホ対応
+import androidx.compose.ui.input.pointer.pointerInput // * スマホ対応
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
@@ -76,6 +79,19 @@ fun SmbVlcPlayerScreen(
     onShowToast: (String) -> Unit,
     isPiPMode: Boolean = false,
     onPiPRequested: () -> Unit = {},
+    // ★ スマホ対応: VLCの mediaPlayer.attachViews() の keepAspectRatio 引数
+    // （下の呼び出し箇所参照）を、呼び出し元（Phone/TV）から指定できるように
+    // する追加パラメータ。
+    // TVへの影響なし: デフォルト値の false は、元々ハードコードされていた
+    // 値と同一。TV側の呼び出しは resizeMode を指定しないため、常にこの
+    // デフォルト値が使われ、既存のTVの表示結果と完全に一致する。
+    resizeMode: Boolean = false,
+    // ★ スマホ対応: 画面タップでOSD（再生操作UI）の表示・非表示を切り替える
+    // ためのコールバック。スマホ用の呼び出し元からのみ渡される。
+    // TVへの影響なし: デフォルト値が null で、この値を使う箇所は
+    // `onTap != null` を条件に含めているため、TV（onTap未指定＝null）では
+    // 該当コードは実行されない。
+    onTap: (() -> Unit)? = null,
     videoPlayerViewModel: VideoPlayerViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel(),
     smbViewModel: SmbViewModel = hiltViewModel()
@@ -187,6 +203,31 @@ fun SmbVlcPlayerScreen(
 
         val isSubOverlayOpen =
             isSubMenuOpen || isSceneSearchOpen || isProgramInfoOpen || isModernSettingsOpen || isChapterListOpen
+
+        // ★ スマホ対応: このビデオプレイヤー（SMBネットワーク再生）の設定
+        // サブメニュー・シーン検索・チャプター一覧・番組情報が開いている間、
+        // システムの「戻る」ジェスチャー/ボタンをここで受け止めて、開いている
+        // 方を閉じるだけの動作にする。ライブ/通常のビデオプレイヤーで見つかった
+        // 「戻る操作がプレイヤーの外まで突き抜けてアプリが閉じてしまう」問題と
+        // 同じ原因（このプレイヤーには元々どんな戻る処理も一切無かった）の
+        // ため、同じ対応をここにも入れている。
+        // TVへの影響なし: onTap != null（＝スマホ）の時だけ有効にする。TVは
+        // D-padの戻るキーで各オーバーレイ内のフォーカス移動・専用の閉じる
+        // ボタン操作を行うため、この BackHandler 自体が無くても問題にならない
+        // （onTap が常に null のTVでは条件が常にfalseになりこのハンドラは
+        // 発火しない）。
+        BackHandler(
+            enabled = onTap != null &&
+                (isSubMenuOpen || isModernSettingsOpen || isSceneSearchOpen || isChapterListOpen || isProgramInfoOpen)
+        ) {
+            when {
+                isModernSettingsOpen -> isModernSettingsOpen = false
+                isSubMenuOpen -> onSubMenuToggle(false)
+                isSceneSearchOpen -> onSceneSearchToggle(false)
+                isChapterListOpen -> isChapterListOpen = false
+                isProgramInfoOpen -> isProgramInfoOpen = false
+            }
+        }
 
         LaunchedEffect(vs.isPlayerPlaying) {
             if (vs.isPlayerPlaying) {
@@ -585,7 +626,13 @@ fun SmbVlcPlayerScreen(
                 factory = { ctx ->
                     VLCVideoLayout(ctx).apply {
                         keepScreenOn = true
-                        mediaPlayer.attachViews(this, null, false, false)
+                        // ★ スマホ対応: 第4引数(textureview)を固定のfalseから
+                        // resizeMode パラメータに置き換えた。
+                        // TVへの影響なし: resizeMode のデフォルト値は false で、
+                        // これは元のハードコード値と同一。TV側の呼び出しは
+                        // resizeMode を指定しないため、常にこのデフォルト値が
+                        // 使われ、元のTVの表示結果と完全に一致する。
+                        mediaPlayer.attachViews(this, null, false, resizeMode)
                     }
                 },
                 modifier = Modifier
@@ -823,6 +870,20 @@ fun SmbVlcPlayerScreen(
 
                 if (!isModern || !showControls) {
                     PlaybackIndicator(vs.indicatorState)
+                }
+
+                // ★ スマホ対応: 画面タップでOSD（再生操作UI）の表示・非表示を
+                // トグルできるようにする透明タップ検知Box。
+                // TVへの影響なし: onTap != null（＝スマホ）の時だけ生成される
+                // Boxで、TV（onTap常にnull）ではこのBox自体が存在しない。
+                if (onTap != null && !showControls && !isSubOverlayOpen) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .pointerInput(Unit) {
+                                detectTapGestures(onTap = { onTap() })
+                            }
+                    )
                 }
             }
         }
