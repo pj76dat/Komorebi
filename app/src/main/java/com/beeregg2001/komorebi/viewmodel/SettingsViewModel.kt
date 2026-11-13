@@ -142,6 +142,18 @@ class SettingsViewModel @Inject constructor(
         SharingStarted.WhileSubscribed(5000),
         "API"
     )
+    // ★ スマホ対応: 元々TV側は SettingScreen.kt から settingsRepository を
+    // 直接参照して読み書きしていた「優先ソース」設定だが、Phone側のUIは
+    // ViewModel経由で統一的に扱いたいため、ここに同じ設定への StateFlow を
+    // 追加公開している。
+    // TVへの影響なし: 新規追加のみで、既存の設定項目・関数は一切変更して
+    // いない。TV側のコードはこのプロパティを一切参照しないため、存在を
+    // 増やしただけで既存の動作に影響はない。
+    val preferredSource: StateFlow<String> = settingsRepository.preferredStreamSource.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        "KONOMITV"
+    )
     val epgStationIp: StateFlow<String> = settingsRepository.epgStationIp.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
@@ -277,6 +289,24 @@ class SettingsViewModel @Inject constructor(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
         "MONOTONE"
+    )
+    // ★ スマホ対応: 元々TV側は SettingContents.kt から settingsRepository を
+    // 直接参照して読み書きしていた設定項目だが、Phone側のUIはViewModel経由で
+    // 統一的に扱いたいため、ここに同じ設定への StateFlow を追加公開している。
+    // TVへの影響なし: 既存の設定項目・関数は一切変更しておらず、新規追加のみ。
+    // TV側のコードはこれらの新しいプロパティを一切参照しないため、存在を
+    // 増やしただけで既存の動作に影響はない。
+    val homePickupGenre: StateFlow<String> = settingsRepository.homePickupGenre.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5000), "アニメ"
+    )
+    val homePickupTime: StateFlow<String> = settingsRepository.homePickupTime.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5000), "自動"
+    )
+    val excludePaidBroadcasts: StateFlow<String> = settingsRepository.excludePaidBroadcasts.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5000), "ON"
+    )
+    val defaultRecordListView: StateFlow<String> = settingsRepository.defaultRecordListView.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5000), "LIST"
     )
     val receiveBetaUpdates: StateFlow<Boolean> = settingsRepository.receiveBetaUpdates.stateIn(
         viewModelScope,
@@ -522,6 +552,19 @@ class SettingsViewModel @Inject constructor(
             SettingsRepository.EDCB_RECORD_PLAY_METHOD,
             method
         ); forceSyncStreamQualities()
+    }
+
+    // ★ スマホ対応: TV UI（SettingScreen.kt の onSelectSrc ダイアログハンドラー）は
+    // settingsRepository.saveString() を直接呼んで「優先ソース」設定を保存して
+    // いるが、Phone UIでは他の設定と同様にViewModelを窓口にして保存したいため、
+    // ここに追加している。
+    // TVへの影響なし: 新規追加の関数のみで、既存の関数・プロパティは一切
+    // 変更・削除していない。処理内容もTV側のonSelectSrcハンドラーと全く同じ
+    // （saveStringを呼ぶだけで、forceSyncStreamQualities等の追加処理は行わない
+    // ＝TVの実際の保存処理と一字一句同じ挙動）。TV側のコードはこの関数を
+    // 一切呼び出さないため、関数を追加しただけで既存の動作に影響はない。
+    fun updatePreferredSource(value: String) = viewModelScope.launch(Dispatchers.IO) {
+        settingsRepository.saveString(SettingsRepository.PREFERRED_STREAM_SOURCE, value)
     }
 
     fun updateMirakurunIp(ip: String) {
@@ -852,5 +895,83 @@ class SettingsViewModel @Inject constructor(
                 </div>
             </body></html>
         """.trimIndent()
+    }
+
+    // ★ スマホ対応: TV UI（SettingContents.kt）は settingsRepository.saveString()
+    // /saveBoolean() を直接呼んで各設定を保存しているが、Phone UIでは
+    // ViewModelを窓口にして保存したいため、各設定項目ごとに1つずつ、対応する
+    // update関数をここに追加している。
+    // TVへの影響なし: 全て新規追加の関数のみで、既存の関数・プロパティは
+    // 一切変更・削除していない。TV側のコードはこれらの新しい関数を一切
+    // 呼び出さないため、関数を追加しただけで既存の動作に影響はない。
+
+    fun updateLiveQuality(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.LIVE_QUALITY, value) }
+    }
+
+    fun updateVideoQuality(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.VIDEO_QUALITY, value) }
+    }
+
+    fun updateAutoCmSkip(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.AUTO_CM_SKIP, value) }
+    }
+
+    fun updateCommentSpeed(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.COMMENT_SPEED, value) }
+    }
+
+    fun updateCommentFontSize(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.COMMENT_FONT_SIZE, value) }
+    }
+
+    fun updateAudioOutputMode(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.AUDIO_OUTPUT_MODE, value) }
+    }
+
+    fun updateMirakurunPort(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.MIRAKURUN_PORT, value) }
+    }
+    fun updateCfAccessClientId(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.CF_ACCESS_CLIENT_ID, value) }
+    }
+    fun updateCfAccessClientSecret(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.CF_ACCESS_CLIENT_SECRET, value) }
+    }
+    fun updateLiveSubtitleDefault(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.LIVE_SUBTITLE_DEFAULT, value) }
+    }
+    fun updateVideoSubtitleDefault(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.VIDEO_SUBTITLE_DEFAULT, value) }
+    }
+    fun updateSubtitleCommentLayer(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.SUBTITLE_COMMENT_LAYER, value) }
+    }
+    fun updatePlayerUiMode(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.PLAYER_UI_MODE, value) }
+    }
+    fun updateCommentOpacity(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.COMMENT_OPACITY, value) }
+    }
+    fun updateCommentMaxLines(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.COMMENT_MAX_LINES, value) }
+    }
+    fun updateCommentDefaultDisplay(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.COMMENT_DEFAULT_DISPLAY, value) }
+    }
+    fun updateStartupTab(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.STARTUP_TAB, value) }
+    }
+    fun updateReceiveBetaUpdates(value: Boolean) {
+        viewModelScope.launch { settingsRepository.saveBoolean(SettingsRepository.RECEIVE_BETA_UPDATES, value) }
+    }
+    fun updateHomePickupGenre(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.HOME_PICKUP_GENRE, value) }
+    }
+    fun updateHomePickupTime(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.HOME_PICKUP_TIME, value) }
+    }
+    fun updateExcludePaidBroadcasts(value: String) {
+        viewModelScope.launch { settingsRepository.saveString(SettingsRepository.EXCLUDE_PAID_BROADCASTS, value) }
     }
 }
